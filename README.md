@@ -1,5 +1,3 @@
-### Sony Control microservice
+# sony-control-microservice [![CircleCI](https://circleci.com/gh/byuoitav/sony-control-microservice.svg?style=svg)](https://circleci.com/gh/byuoitav/sony-control-microservice)
 
-![Circle CI Build Status](https://circleci.com/gh/byuoitav/sony-control/tree/master.svg?style=shield)
-
-[![View in Swagger](http://www.jessemillar.com/view-in-swagger-button/button.svg)](http://byuoitav.github.io/swagger-ui/?url=https://raw.githubusercontent.com/byuoitav/sony-control/master/swagger.yml)
+[![View in Swagger](http://jessemillar.github.io/view-in-swagger-button/button.svg)](http://byuoitav.github.io/swagger-ui/?url=https://raw.githubusercontent.com/byuoitav/sony-control/master/swagger.yml)
