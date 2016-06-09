@@ -9,6 +9,6 @@
         "Update": "true"
     },
     "Ports": [{
-        "ContainerPort": "8006"
+        "ContainerPort": "8007"
     }]
 }
