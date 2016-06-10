@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	err := hateoas.Load("https://raw.githubusercontent.com/byuoitav/sony-control/master/swagger.yml")
+	err := hateoas.Load("https://raw.githubusercontent.com/byuoitav/sony-control-microservice/master/swagger.yml")
 	if err != nil {
 		fmt.Println("Could not load swagger.yaml file. Error: " + err.Error())
 		panic(err)
@@ -27,6 +27,8 @@ func main() {
 
 	router.Get("/", hateoas.RootResponse)
 	router.Get("/capability/:address", controllers.Capability)
+
+	router.Post("/command", controllers.Command)
 
 	fmt.Printf("Sony Control microservice is listening on %s\n", port)
 	router.Run(fasthttp.New(port))

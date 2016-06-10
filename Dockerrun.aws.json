@@ -5,7 +5,7 @@
         "Key": ".dockercfg"
     },
     "Image": {
-        "Name": "byuoitav/sony-control:latest",
+        "Name": "byuoitav/sony-control-microservice:latest",
         "Update": "true"
     },
     "Ports": [{
