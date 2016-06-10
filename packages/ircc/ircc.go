@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -29,7 +28,6 @@ func GetCapability(address string) (Capability, error) {
 	capabilities := Capability{}
 
 	body, err := ioutil.ReadAll(response.Body)
-	fmt.Printf("%+s\n", body)
 	if err != nil {
 		return Capability{}, err
 	} else if body != nil {
