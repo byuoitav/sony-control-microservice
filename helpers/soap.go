@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func PostHTTP(address string, postBody []byte) ([]byte, error) {
+func PostSOAP(address string, command string) ([]byte], error) {
 	request, err := http.NewRequest("POST", address, bytes.NewBuffer(postBody))
 	request.Header.Set("Content-Type", "application/json")
 

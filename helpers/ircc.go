@@ -30,12 +30,7 @@ func GetCapability(address string) (Capability, error) {
 }
 
 func SendCommand(address string, command string) (string, error) {
-	var postBody = []byte(`{
-  "method": "getRemoteControllerInfo",
-  "params": [],
-  "id": 10,
-  "version": "1.0"
-}`)
+	var postBody = []byte(`<?xml version=\"1.0\"?><s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><s:Body><u:X_SendIRCC xmlns:u=\"urn:schemas-sony-com:service:IRCC:1\"><IRCCCode>$2</IRCCCode></u:X_SendIRCC></s:Body></s:Envelope>`)
 
 	response, err := Post("http://"+address+"/sony/IRCC", postBody)
 	if err != nil {
