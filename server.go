@@ -26,9 +26,9 @@ func main() {
 	router.Get("/health", health.Check)
 
 	router.Get("/", hateoas.RootResponse)
-	router.Get("/capability/:address", controllers.Capability)
+	router.Get("/command/:address", controllers.GetCommands)
 
-	router.Post("/command", controllers.Command)
+	router.Post("/command", controllers.SendCommand)
 
 	fmt.Printf("Sony Control microservice is listening on %s\n", port)
 	router.Run(fasthttp.New(port))
