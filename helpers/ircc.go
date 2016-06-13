@@ -15,7 +15,7 @@ func GetCapability(address string) (Capability, error) {
   "version": "1.0"
 }`)
 
-	response, err := Post("http://"+address+"/sony/system", postBody)
+	response, err := PostHTTP("http://"+address+"/sony/system", postBody)
 	if err != nil {
 		return Capability{}, err
 	}
@@ -30,9 +30,9 @@ func GetCapability(address string) (Capability, error) {
 }
 
 func SendCommand(address string, command string) (string, error) {
-	var postBody = []byte(`<?xml version=\"1.0\"?><s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><s:Body><u:X_SendIRCC xmlns:u=\"urn:schemas-sony-com:service:IRCC:1\"><IRCCCode>$2</IRCCCode></u:X_SendIRCC></s:Body></s:Envelope>`)
+	var postBody = []byte(`<?xml version="1.0"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:X_SendIRCC xmlns:u="urn:schemas-sony-com:service:IRCC:1"><IRCCCode>` + command + `</IRCCCode></u:X_SendIRCC></s:Body></s:Envelope>`)
 
-	response, err := Post("http://"+address+"/sony/IRCC", postBody)
+	response, err := PostSOAP("http://"+address+"/sony/IRCC", postBody)
 	if err != nil {
 		return "", err
 	}
