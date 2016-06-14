@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,41 +21,51 @@ type keys struct {
 	} `json:"keys"`
 }
 
-func Validate(token jwt.Token) (bool, error) {
-	token, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-		// Don't forget to validate the alg is what you expect
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-
-		return lookupKey(), nil
+func Validate(myToken string, myLookupKey func(interface{}) (interface{}, error)) {
+	token, err := jwt.Parse(myToken, func(token *jwt.Token) (interface{}, error) {
+		return lookupKey(token.Header["kid"])
 	})
 
-	if err == nil && token.Valid {
-		fmt.Println("Authorized")
+	if token.Valid {
+		fmt.Println("You look nice today")
+	} else if ve, ok := err.(*jwt.ValidationError); ok {
+		if ve.Errors&jwt.ValidationErrorMalformed != 0 {
+			fmt.Println("That's not even a token")
+		} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
+			// Token is either expired or not active yet
+			fmt.Println("Timing is everything")
+		} else {
+			fmt.Println("Couldn't handle this token:", err)
+		}
 	} else {
-		fmt.Println("Unauthorized")
+		fmt.Println("Couldn't handle this token:", err)
 	}
 
-	return false, nil
+	return nil, nil
 }
 
-func lookupKey() (string, error) {
+func lookupKey(kid interface{}) (interface{}, error) {
 	response, err := http.Get("https://api.byu.edu/.well-known/byucerts")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	key := keys{}
+	allKeys := keys{}
 	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	err = json.Unmarshal(responseBody, &key)
+	err = json.Unmarshal(responseBody, &allKeys)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return key.Keys[0].N, nil
+	for i := range allKeys.Keys {
+		if allKeys.Keys[i].Kid == kid {
+			return allKeys.Keys[0].N, nil
+		}
+	}
+
+	return nil, errors.New("Could not find valid key")
 }

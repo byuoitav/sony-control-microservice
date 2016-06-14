@@ -21,11 +21,6 @@ func main() {
 	port := ":8007"
 	router := echo.New()
 	router.Pre(middleware.RemoveTrailingSlash())
-	router.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey:    []byte("secret"),
-		SigningMethod: jwt.AlgorithmHS256,
-		TokenLookup:   "query:token",
-	}))
 
 	// GET requests
 	router.Get("/health", health.Check)
