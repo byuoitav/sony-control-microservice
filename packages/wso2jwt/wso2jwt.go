@@ -1,4 +1,4 @@
-package jwt
+package wso2jwt
 
 import (
 	"encoding/json"
@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo"
 )
 
 type keys struct {
@@ -21,7 +22,29 @@ type keys struct {
 	} `json:"keys"`
 }
 
-func Validate(myToken string, myLookupKey func(interface{}) (interface{}, error)) {
+// ValidateJWT is the middleware function
+func ValidateJWT(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(context echo.Context) error {
+		if err := next(context); err != nil {
+			context.Error(err)
+		}
+
+		fmt.Printf("%+s\n", context)
+
+		// valid, err := validate()
+		// if err != nil {
+		// 	context.Error(err)
+		// }
+		//
+		// if !valid {
+		// 	context.Error(errors.New("Not authorized"))
+		// }
+
+		return nil
+	}
+}
+
+func validate(myToken string, myLookupKey func(interface{}) (interface{}, error)) {
 	token, err := jwt.Parse(myToken, func(token *jwt.Token) (interface{}, error) {
 		return lookupKey(token.Header["kid"])
 	})
@@ -40,8 +63,6 @@ func Validate(myToken string, myLookupKey func(interface{}) (interface{}, error)
 	} else {
 		fmt.Println("Couldn't handle this token:", err)
 	}
-
-	return nil, nil
 }
 
 func lookupKey(kid interface{}) (interface{}, error) {

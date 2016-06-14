@@ -21,6 +21,13 @@ func main() {
 	port := ":8007"
 	router := echo.New()
 	router.Pre(middleware.RemoveTrailingSlash())
+	// router.Use(wso2jwt.ValidateJWT)
+	router.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		SigningMethod: "RS256",
+		SigningKey: []byte(`-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDdlatRjRjogo3WojgGHFHYLugdUWAY9iR3fy4arWNA1KoS8kVw33cJibXr8bvwUAUparCwlvdbH6dvEOfou0/gCFQsHUfQrSDv+MuSUMAe8jzKE4qW+jK+xQU9a03GUnKHkkle+Q0pX/g6jXZ7r1/xAK5Do2kQ+X5xK9cipRgEKwIDAQAB
+-----END PUBLIC KEY-----`),
+	}))
 
 	// GET requests
 	router.Get("/health", health.Check)
