@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/jessemillar/jsonresp"
 	"github.com/labstack/echo"
 )
 
@@ -30,21 +31,16 @@ func ValidateJWT() echo.MiddlewareFunc {
 			if token != "" {
 				token = token[7:]
 			} else {
-				return echo.NewHTTPError(http.StatusBadRequest, "No Authorization header present")
+				return jsonresp.New(context, http.StatusBadRequest, "No Authorization header present")
 			}
-
-			fmt.Println(token)
 
 			valid, err := validate(token)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+				return jsonresp.New(context, http.StatusBadRequest, err.Error())
 			}
 
-			fmt.Println("Hit this line")
-
-			if valid == false {
-				fmt.Println("Returning unauthorized error")
-				return echo.NewHTTPError(http.StatusUnauthorized, "Not authorized")
+			if !valid {
+				return jsonresp.New(context, http.StatusUnauthorized, "Not authorized")
 			}
 
 			return nil
@@ -52,28 +48,26 @@ func ValidateJWT() echo.MiddlewareFunc {
 	}
 }
 
-func validate(headerToken string) (bool, error) {
-	token, err := jwt.Parse(headerToken, func(token *jwt.Token) (interface{}, error) {
-		return lookupKey(token.Header["kid"])
+func validate(token string) (bool, error) {
+	parsedToken, _ := jwt.Parse(token, func(parsedToken *jwt.Token) (interface{}, error) {
+		_, correctSigningMethod := parsedToken.Method.(*jwt.SigningMethodRSA) // Check that our keys are signed as expected (https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/)
+		if !correctSigningMethod {
+			return nil, fmt.Errorf("Unexpected signing method: %v", parsedToken.Header["alg"])
+		}
+
+		return lookupToken(parsedToken.Header["kid"])
 	})
 
-	if token.Valid {
+	fmt.Printf("%+v", parsedToken)
+
+	if parsedToken.Valid {
 		return true, nil
-	} else if ve, ok := err.(*jwt.ValidationError); ok {
-		if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-			return false, errors.New("That's not even a token")
-		} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-			// Token is either expired or not active yet
-			return false, errors.New("Timing is everything")
-		} else {
-			return false, errors.New("Couldn't handle the token: " + err.Error())
-		}
-	} else {
-		return false, errors.New("Couldn't handle the token: " + err.Error())
 	}
+
+	return false, errors.New("Not authorized")
 }
 
-func lookupKey(kid interface{}) (string, error) {
+func lookupToken(kid interface{}) (string, error) {
 	response, err := http.Get("https://api.byu.edu/.well-known/byucerts")
 	if err != nil {
 		return "", err
