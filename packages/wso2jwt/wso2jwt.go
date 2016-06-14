@@ -34,67 +34,60 @@ func ValidateJWT() echo.MiddlewareFunc {
 				return jsonresp.New(context, http.StatusBadRequest, "No Authorization header present")
 			}
 
-			valid, err := validate(token)
+			err := validate(token)
 			if err != nil {
 				return jsonresp.New(context, http.StatusBadRequest, err.Error())
 			}
 
-			if !valid {
-				return jsonresp.New(context, http.StatusUnauthorized, "Not authorized")
-			}
-
-			return nil
+			return next(context)
 		}
 	}
 }
 
-func validate(token string) (bool, error) {
+func validate(token string) error {
 	parsedToken, err := jwt.Parse(token, func(parsedToken *jwt.Token) (interface{}, error) {
-		_, correctSigningMethod := parsedToken.Method.(*jwt.SigningMethodRSA) // Check that our keys are signed as expected (https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/)
-		if !correctSigningMethod {
-			return nil, fmt.Errorf("Unexpected signing method: %v", parsedToken.Header["alg"])
+		if parsedToken.Method.Alg() != "RS256" { // Check that our keys are signed with RS256 as expected (https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/)
+			return nil, fmt.Errorf("Unexpected signing method: %v", parsedToken.Header["alg"]) // This error never gets returned to the user but may be useful for debugging/logging at some point
 		}
 
-		return lookupToken(parsedToken.Header["kid"])
+		return lookupSigningKey(parsedToken.Header["kid"])
 	})
 
-	fmt.Printf("%+v", parsedToken)
-
 	if parsedToken.Valid {
-		return true, nil
+		return nil
 	} else if validationError, ok := err.(*jwt.ValidationError); ok {
 		if validationError.Errors&jwt.ValidationErrorMalformed != 0 {
-			return false, errors.New("Authorization token is malformed")
+			return errors.New("Authorization token is malformed")
 		} else if validationError.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-			return false, errors.New("Authorization token is expired")
+			return errors.New("Authorization token is expired")
 		}
 	}
 
-	return false, errors.New("Not authorized")
+	return errors.New("Not authorized")
 }
 
-func lookupToken(kid interface{}) (string, error) {
+func lookupSigningKey(keyID interface{}) ([]byte, error) {
 	response, err := http.Get("https://api.byu.edu/.well-known/byucerts")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	allKeys := keys{}
 	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	err = json.Unmarshal(responseBody, &allKeys)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	for i := range allKeys.Keys {
-		if allKeys.Keys[i].Kid == kid {
-			return allKeys.Keys[0].N, nil
+		if allKeys.Keys[i].Kid == keyID {
+			return []byte(allKeys.Keys[0].N), nil
 		}
 	}
 
-	return "", errors.New("Could not find valid key")
+	return nil, errors.New("Could not find a valid signing key")
 }
