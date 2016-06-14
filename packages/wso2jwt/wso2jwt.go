@@ -23,63 +23,71 @@ type keys struct {
 }
 
 // ValidateJWT is the middleware function
-func ValidateJWT(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(context echo.Context) error {
-		if err := next(context); err != nil {
-			context.Error(err)
+func ValidateJWT() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(context echo.Context) error {
+			token := context.Request().Header().Get("Authorization")
+			if token != "" {
+				token = token[7:]
+			} else {
+				return echo.NewHTTPError(http.StatusBadRequest, "No Authorization header present")
+			}
+
+			fmt.Println(token)
+
+			valid, err := validate(token)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+			}
+
+			fmt.Println("Hit this line")
+
+			if valid == false {
+				fmt.Println("Returning unauthorized error")
+				return echo.NewHTTPError(http.StatusUnauthorized, "Not authorized")
+			}
+
+			return nil
 		}
-
-		fmt.Printf("%+s\n", context)
-
-		// valid, err := validate()
-		// if err != nil {
-		// 	context.Error(err)
-		// }
-		//
-		// if !valid {
-		// 	context.Error(errors.New("Not authorized"))
-		// }
-
-		return nil
 	}
 }
 
-func validate(myToken string, myLookupKey func(interface{}) (interface{}, error)) {
-	token, err := jwt.Parse(myToken, func(token *jwt.Token) (interface{}, error) {
+func validate(headerToken string) (bool, error) {
+	token, err := jwt.Parse(headerToken, func(token *jwt.Token) (interface{}, error) {
 		return lookupKey(token.Header["kid"])
 	})
 
 	if token.Valid {
-		fmt.Println("You look nice today")
+		return true, nil
 	} else if ve, ok := err.(*jwt.ValidationError); ok {
 		if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-			fmt.Println("That's not even a token")
+			return false, errors.New("That's not even a token")
 		} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
 			// Token is either expired or not active yet
-			fmt.Println("Timing is everything")
+			return false, errors.New("Timing is everything")
 		} else {
-			fmt.Println("Couldn't handle this token:", err)
+			return false, errors.New("Couldn't handle the token: " + err.Error())
 		}
 	} else {
-		fmt.Println("Couldn't handle this token:", err)
+		return false, errors.New("Couldn't handle the token: " + err.Error())
 	}
 }
 
-func lookupKey(kid interface{}) (interface{}, error) {
+func lookupKey(kid interface{}) (string, error) {
 	response, err := http.Get("https://api.byu.edu/.well-known/byucerts")
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	allKeys := keys{}
 	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	err = json.Unmarshal(responseBody, &allKeys)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	for i := range allKeys.Keys {
@@ -88,5 +96,5 @@ func lookupKey(kid interface{}) (interface{}, error) {
 		}
 	}
 
-	return nil, errors.New("Could not find valid key")
+	return "", errors.New("Could not find valid key")
 }
