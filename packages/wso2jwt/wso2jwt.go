@@ -29,7 +29,7 @@ func ValidateJWT() echo.MiddlewareFunc {
 		return func(context echo.Context) error {
 			token := context.Request().Header().Get("Authorization")
 			if token != "" {
-				token = token[7:]
+				token = token[7:] // Remove "Bearer " from the token
 			} else {
 				return jsonresp.New(context, http.StatusBadRequest, "No Authorization header present")
 			}
@@ -49,7 +49,7 @@ func ValidateJWT() echo.MiddlewareFunc {
 }
 
 func validate(token string) (bool, error) {
-	parsedToken, _ := jwt.Parse(token, func(parsedToken *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.Parse(token, func(parsedToken *jwt.Token) (interface{}, error) {
 		_, correctSigningMethod := parsedToken.Method.(*jwt.SigningMethodRSA) // Check that our keys are signed as expected (https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/)
 		if !correctSigningMethod {
 			return nil, fmt.Errorf("Unexpected signing method: %v", parsedToken.Header["alg"])
@@ -62,6 +62,12 @@ func validate(token string) (bool, error) {
 
 	if parsedToken.Valid {
 		return true, nil
+	} else if validationError, ok := err.(*jwt.ValidationError); ok {
+		if validationError.Errors&jwt.ValidationErrorMalformed != 0 {
+			return false, errors.New("Authorization token is malformed")
+		} else if validationError.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
+			return false, errors.New("Authorization token is expired")
+		}
 	}
 
 	return false, errors.New("Not authorized")
