@@ -5,6 +5,7 @@ import (
 
 	"github.com/byuoitav/hateoas"
 	"github.com/byuoitav/sony-control-microservice/controllers"
+	"github.com/byuoitav/wso2jwt"
 	"github.com/jessemillar/health"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/engine/fasthttp"
@@ -21,6 +22,8 @@ func main() {
 	port := ":8007"
 	router := echo.New()
 	router.Pre(middleware.RemoveTrailingSlash())
+
+	router.Group("/command", wso2jwt.ValidateJWT())
 
 	// GET requests
 	router.Get("/health", health.Check)

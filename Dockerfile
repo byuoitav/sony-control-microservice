@@ -9,4 +9,4 @@ RUN go install -v
 
 CMD ["/go/bin/sony-control-microservice"]
 
-EXPOSE 8006
+EXPOSE 8007

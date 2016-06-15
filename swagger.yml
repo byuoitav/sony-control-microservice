@@ -13,7 +13,50 @@ paths:
     get:
       summary: Check Service Health
       description: |
-        Returns information about the microservice's health
+        Returns information about the microservice's health.
+      tags:
+        - Health
+      responses:
+        200:
+          description: A health message
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Response"
+        401:
+          $ref: "#/responses/401"
+        500:
+          $ref: "#/responses/500"
+        503:
+          $ref: "#/responses/503"
+        default:
+          $ref: "#/responses/default"
+  /command:
+    get:
+      summary: Use Microservice
+      description: |
+        Returns information about the /send endpoint.
+      tags:
+        - Health
+      responses:
+        200:
+          description: A health message
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Response"
+        401:
+          $ref: "#/responses/401"
+        500:
+          $ref: "#/responses/500"
+        503:
+          $ref: "#/responses/503"
+        default:
+          $ref: "#/responses/default"
+    post:
+      summary: Send a Command
+      description: |
+        Send a command to a specified TV.
       tags:
         - Health
       responses:
@@ -41,7 +84,9 @@ definitions:
       href:
         type: string
         description: The link to the endpoint
-  Error:
+  command-request:
+    type: object
+  error:
     type: object
     properties:
       message:
@@ -66,4 +111,4 @@ responses:
   default:
     description: Unexpected error
     schema:
-      $ref: "#/definitions/Error"
+      $ref: "#/definitions/error"
