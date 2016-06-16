@@ -83,6 +83,15 @@
                 "tags": [
                     "Health"
                 ],
+                "parameters": [{
+                    "name": "body",
+                    "description": "The TV to contact and the command to be executed",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/command-request"
+                    }
+                }],
                 "responses": {
                     "200": {
                         "description": "A health message",
@@ -124,7 +133,15 @@
             }
         },
         "command-request": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "command": {
+                    "type": "string"
+                }
+            }
         },
         "response": {
             "type": "object",
@@ -147,12 +164,6 @@
         }
     },
     "responses": {
-        "202": {
-            "description": "The request has been accepted for processing, but the processing has not been completed. The request might or might not eventually be acted upon, as it might be disallowed when processing actually takes place.",
-            "schema": {
-                "$ref": "#/definitions/error"
-            }
-        },
         "401": {
             "description": "You are not authorized to make that request",
             "schema": {

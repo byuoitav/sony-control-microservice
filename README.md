@@ -1,4 +1,5 @@
-# sony-control-microservice [![CircleCI](https://circleci.com/gh/byuoitav/sony-control-microservice.svg?style=svg)](https://circleci.com/gh/byuoitav/sony-control-microservice)
+# sony-control-microservice
+[![CircleCI](https://img.shields.io/circleci/project/byuoitav/sony-control-microservice.svg?maxAge=2592000)](https://circleci.com/gh/byuoitav/sony-control-microservice) ![Codecov](https://img.shields.io/codecov/c/github/byuoitav/sony-control-microservice.svg?maxAge=2592000)
 
 [![View in Swagger](http://jessemillar.github.io/view-in-swagger-button/button.svg)](http://byuoitav.github.io/swagger-ui/?url=https://raw.githubusercontent.com/byuoitav/sony-control/master/swagger.json)
 
