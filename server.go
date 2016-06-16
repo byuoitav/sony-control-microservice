@@ -23,15 +23,12 @@ func main() {
 	router := echo.New()
 	router.Pre(middleware.RemoveTrailingSlash())
 
-	router.Group("/command", wso2jwt.ValidateJWT())
-
-	// GET requests
+	router.Get("/", hateoas.RootResponse)
 	router.Get("/health", health.Check)
 
-	router.Get("/", hateoas.RootResponse)
-	router.Get("/command/:address", controllers.GetCommands)
+	router.Get("/command/:address", controllers.GetCommands, wso2jwt.ValidateJWT())
 
-	router.Post("/command", controllers.SendCommand)
+	router.Post("/command", controllers.SendCommand, wso2jwt.ValidateJWT())
 
 	fmt.Printf("Sony Control microservice is listening on %s\n", port)
 	server := fasthttp.New(port)

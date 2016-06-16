@@ -1,0 +1,181 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Sony Control Microservice",
+        "description": "Interact with Sony display control protocols",
+        "version": "0.1"
+    },
+    "host": "api.byu.edu:443",
+    "basePath": "/byuoitav-sony-control-microservice/0.1",
+    "schemes": [
+        "https"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/health": {
+            "get": {
+                "summary": "Check Service Health",
+                "description": "Returns information about the microservice's health.",
+                "tags": [
+                    "Health"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A health message",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response"
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/401"
+                    },
+                    "500": {
+                        "$ref": "#/responses/500"
+                    },
+                    "503": {
+                        "$ref": "#/responses/503"
+                    },
+                    "default": {
+                        "$ref": "#/responses/default"
+                    }
+                }
+            }
+        },
+        "/command": {
+            "get": {
+                "summary": "Use Microservice",
+                "description": "Returns information about the /send endpoint.",
+                "tags": [
+                    "Health"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A health message",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response"
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/401"
+                    },
+                    "500": {
+                        "$ref": "#/responses/500"
+                    },
+                    "503": {
+                        "$ref": "#/responses/503"
+                    },
+                    "default": {
+                        "$ref": "#/responses/default"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Send a Command",
+                "description": "Send a command to a specified TV.",
+                "tags": [
+                    "Health"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A health message",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response"
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/401"
+                    },
+                    "500": {
+                        "$ref": "#/responses/500"
+                    },
+                    "503": {
+                        "$ref": "#/responses/503"
+                    },
+                    "default": {
+                        "$ref": "#/responses/default"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "HATEOAS": {
+            "type": "object",
+            "properties": {
+                "rel": {
+                    "type": "string",
+                    "description": "A human-readable name for what the link represents"
+                },
+                "href": {
+                    "type": "string",
+                    "description": "The link to the endpoint"
+                }
+            }
+        },
+        "command-request": {
+            "type": "object"
+        },
+        "response": {
+            "type": "object",
+            "properties": {
+                "links": {
+                    "$ref": "#/definitions/HATEOAS"
+                },
+                "response": {
+                    "type": "string"
+                }
+            }
+        },
+        "error": {
+            "type": "object",
+            "properties": {
+                "response": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "responses": {
+        "202": {
+            "description": "The request has been accepted for processing, but the processing has not been completed. The request might or might not eventually be acted upon, as it might be disallowed when processing actually takes place.",
+            "schema": {
+                "$ref": "#/definitions/error"
+            }
+        },
+        "401": {
+            "description": "You are not authorized to make that request",
+            "schema": {
+                "$ref": "#/definitions/error"
+            }
+        },
+        "500": {
+            "description": "There was a problem with the server on our end",
+            "schema": {
+                "$ref": "#/definitions/error"
+            }
+        },
+        "503": {
+            "description": "The server is overloaded, is under maintenance, or is otherwise unavailable",
+            "schema": {
+                "$ref": "#/definitions/error"
+            }
+        },
+        "default": {
+            "description": "Unexpected error",
+            "schema": {
+                "$ref": "#/definitions/error"
+            }
+        }
+    }
+}
