@@ -8,7 +8,7 @@ import (
 	"github.com/byuoitav/wso2jwt"
 	"github.com/jessemillar/health"
 	"github.com/labstack/echo"
-	"github.com/labstack/echo/engine/standard"
+	"github.com/labstack/echo/engine/fasthttp"
 	"github.com/labstack/echo/middleware"
 )
 
@@ -34,5 +34,7 @@ func main() {
 	router.Post("/command", controllers.SendCommand)
 
 	fmt.Printf("Sony Control microservice is listening on %s\n", port)
-	router.Run(standard.New(port))
+	server := fasthttp.New(port)
+	server.ReadBufferSize = 1024 * 10 // Needed to interface properly with WSO2
+	router.Run(server)
 }
