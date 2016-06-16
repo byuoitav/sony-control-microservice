@@ -13,6 +13,7 @@ import (
 
 var commandsJSON = `{"id":10,"result":[{"bundled":true,"type":"IR_REMOTE_BUNDLE_TYPE_UC"},[{"name":"Num1","value":"AAAAAQAAAAEAAAAAAw=="},{"name":"Num2","value":"AAAAAQAAAAEAAAABAw=="}]]}`
 
+// TestGetCommands verifies that the response we get from GetCommands is the same as the JSON we get from the TV
 func TestGetCommands(test *testing.T) {
 	// Setup
 	router := echo.New()

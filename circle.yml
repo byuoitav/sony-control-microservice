@@ -4,6 +4,7 @@ machine:
 
 test:
   post:
+    - ./test.sh
     - bash <(curl -s https://codecov.io/bash)
 
 dependencies:
