@@ -49,9 +49,9 @@
         "/command": {
             "get": {
                 "summary": "Use Microservice",
-                "description": "Returns information about the /send endpoint.",
+                "description": "Returns information about the /command endpoint.",
                 "tags": [
-                    "Health"
+                    "Commands"
                 ],
                 "responses": {
                     "200": {
@@ -81,7 +81,7 @@
                 "summary": "Send a Command",
                 "description": "Send a command to a specified TV.",
                 "tags": [
-                    "Health"
+                    "Commands"
                 ],
                 "parameters": [{
                     "name": "body",
@@ -92,6 +92,45 @@
                         "$ref": "#/definitions/command-request"
                     }
                 }],
+                "responses": {
+                    "200": {
+                        "description": "A health message",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response"
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/401"
+                    },
+                    "500": {
+                        "$ref": "#/responses/500"
+                    },
+                    "503": {
+                        "$ref": "#/responses/503"
+                    },
+                    "default": {
+                        "$ref": "#/responses/default"
+                    }
+                }
+            }
+        },
+        "/command/{address}": {
+            "get": {
+                "summary": "Use Microservice",
+                "description": "Returns available commands from the specified TV.",
+                "parameters": [{
+                    "name": "address",
+                    "in": "path",
+                    "description": "TV address",
+                    "required": true,
+                    "type": "string"
+                }],
+                "tags": [
+                    "Commands"
+                ],
                 "responses": {
                     "200": {
                         "description": "A health message",
