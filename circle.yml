@@ -7,15 +7,12 @@ test:
     - ./coverage.sh
     - bash <(curl -s https://codecov.io/bash)
 
-dependencies:
-  post:
-    - docker build -t byuoitav/sony-control-microservice:$CIRCLE_SHA1 .
-    - docker build -t byuoitav/sony-control-microservice:latest .
-
 deployment:
   production:
     branch: master
     commands:
+      - docker build -t byuoitav/sony-control-microservice:$CIRCLE_SHA1 .
+      - docker build -t byuoitav/sony-control-microservice:latest .
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - docker push byuoitav/sony-control-microservice:$CIRCLE_SHA1
       - docker push byuoitav/sony-control-microservice:latest
