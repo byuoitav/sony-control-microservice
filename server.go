@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/byuoitav/hateoas"
-	"github.com/byuoitav/sony-control-microservice/controllers"
+	"github.com/byuoitav/sony-control-microservice/handlers"
 	"github.com/byuoitav/wso2jwt"
 	"github.com/jessemillar/health"
 	"github.com/labstack/echo"
@@ -26,9 +26,9 @@ func main() {
 	router.Get("/", hateoas.RootResponse)
 	router.Get("/health", health.Check)
 
-	router.Get("/command/:address", controllers.GetCommands, wso2jwt.ValidateJWT())
+	router.Get("/command/:address", handlers.GetCommands, wso2jwt.ValidateJWT())
 
-	router.Post("/command", controllers.SendCommand, wso2jwt.ValidateJWT())
+	router.Post("/command", handlers.SendCommand, wso2jwt.ValidateJWT())
 
 	fmt.Printf("Sony Control microservice is listening on %s\n", port)
 	server := fasthttp.New(port)
