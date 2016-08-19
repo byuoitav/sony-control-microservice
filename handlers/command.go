@@ -8,11 +8,6 @@ import (
 	"github.com/labstack/echo"
 )
 
-type request struct {
-	Address string `json:"address"`
-	Command string `json:"command"`
-}
-
 func GetCommands(context echo.Context) error {
 	response, err := helpers.GetCommands(context.Param("address"))
 	if err != nil {
@@ -23,13 +18,7 @@ func GetCommands(context echo.Context) error {
 }
 
 func SendCommand(context echo.Context) error {
-	request := request{}
-	err := context.Bind(&request)
-	if err != nil {
-		return jsonresp.New(context, http.StatusBadRequest, err.Error())
-	}
-
-	response, err := helpers.SendCommand(request.Address, request.Command)
+	response, err := helpers.SendCommand(context.Param("address"), context.Param("command"))
 	if err != nil {
 		return jsonresp.New(context, http.StatusBadRequest, err.Error())
 	}

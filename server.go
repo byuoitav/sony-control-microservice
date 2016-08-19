@@ -26,9 +26,15 @@ func main() {
 	router.Get("/", hateoas.RootResponse)
 	router.Get("/health", health.Check)
 
-	router.Get("/command/:address", handlers.GetCommands, wso2jwt.ValidateJWT())
+	router.Get("/:address/commands/list", handlers.GetCommands, wso2jwt.ValidateJWT())
+	router.Get("/:address/command/:command", handlers.SendCommand, wso2jwt.ValidateJWT())
 
-	router.Post("/command", handlers.SendCommand, wso2jwt.ValidateJWT())
+	router.Get("/:address/power/on", handlers.PowerOn, wso2jwt.ValidateJWT())
+	router.Get("/:address/power/off", handlers.PowerOff, wso2jwt.ValidateJWT())
+	router.Get("/:address/input/:port", handlers.SwitchInput, wso2jwt.ValidateJWT())
+	router.Get("/:address/volume/:level", handlers.ChangeVolume, wso2jwt.ValidateJWT())
+	router.Get("/:address/display/blank", handlers.BlankDisplay, wso2jwt.ValidateJWT())
+	router.Get("/:address/display/unblank", handlers.UnblankDisplay, wso2jwt.ValidateJWT())
 
 	log.Println("Sony Control microservice is listening on " + port)
 	server := fasthttp.New(port)
