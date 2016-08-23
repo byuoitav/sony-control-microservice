@@ -14,7 +14,7 @@ func PowerOn(context echo.Context) error {
 	return nil
 }
 
-func PowerOff(context echo.Context) error {
+func Standby(context echo.Context) error {
 	_, err := helpers.SendCommand(context.Param("address"), "poweroff")
 	if err != nil {
 		return err
