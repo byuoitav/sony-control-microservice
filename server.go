@@ -28,6 +28,7 @@ func main() {
 
 	router.Get("/:address/list/commands", handlers.GetCommands, wso2jwt.ValidateJWT())
 	router.Get("/:address/command/:command", handlers.SendCommand, wso2jwt.ValidateJWT())
+	router.Get("/:address/command/:command/count/:count", handlers.FloodCommand, wso2jwt.ValidateJWT())
 
 	router.Get("/:address/power/on", handlers.PowerOn, wso2jwt.ValidateJWT())
 	router.Get("/:address/power/standby", handlers.Standby, wso2jwt.ValidateJWT())
