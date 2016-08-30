@@ -6,7 +6,7 @@ import (
 )
 
 func PowerOn(context echo.Context) error {
-	_, err := helpers.SendCommand(context.Param("address"), "tvpower")
+	_, err := helpers.SendCommand(context.Param("address"), "wakeup")
 	if err != nil {
 		return err
 	}
