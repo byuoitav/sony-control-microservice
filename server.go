@@ -28,13 +28,17 @@ func main() {
 
 	router.Get("/:address/list/commands", handlers.GetCommands, wso2jwt.ValidateJWT())
 	router.Get("/:address/command/:command", handlers.SendCommand, wso2jwt.ValidateJWT())
+	router.Get("/:address/command/:command/count/:count", handlers.FloodCommand, wso2jwt.ValidateJWT())
 
 	router.Get("/:address/power/on", handlers.PowerOn, wso2jwt.ValidateJWT())
 	router.Get("/:address/power/standby", handlers.Standby, wso2jwt.ValidateJWT())
 	router.Get("/:address/input/:port", handlers.SwitchInput, wso2jwt.ValidateJWT())
+	router.Get("/:address/volume/set/:difference", handlers.SetVolume, wso2jwt.ValidateJWT())
+	router.Get("/:address/volume/calibrate/:default", handlers.CalibrateVolume, wso2jwt.ValidateJWT())
 	router.Get("/:address/volume/up", handlers.VolumeUp, wso2jwt.ValidateJWT())
 	router.Get("/:address/volume/down", handlers.VolumeDown, wso2jwt.ValidateJWT())
 	router.Get("/:address/volume/mute", handlers.VolumeMute, wso2jwt.ValidateJWT())
+	router.Get("/:address/volume/unmute", handlers.VolumeUnmute, wso2jwt.ValidateJWT())
 	router.Get("/:address/display/blank", handlers.BlankDisplay, wso2jwt.ValidateJWT())
 	router.Get("/:address/display/unblank", handlers.UnblankDisplay, wso2jwt.ValidateJWT())
 
