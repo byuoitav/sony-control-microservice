@@ -165,3 +165,9 @@ func SendCommand(address string, command string) (string, error) {
 
 	return string(response), nil
 }
+
+func FloodCommand(address string, command string, count int) {
+	for i := 1; i <= count; i++ {
+		go SendCommand(address, command)
+	}
+}
