@@ -137,6 +137,7 @@ func VolumeMute(context echo.Context) error {
 }
 
 func BlankDisplay(context echo.Context) error {
+	log.Printf("Blanking %s...", context.Param("address"))
 	_, err := helpers.SendCommand(context.Param("address"), "pictureoff")
 	if err != nil {
 		return err
@@ -147,7 +148,7 @@ func BlankDisplay(context echo.Context) error {
 }
 
 func UnblankDisplay(context echo.Context) error {
-	log.Printf("Blanking %s...", context.Param("address"))
+	log.Printf("unblanking %s...", context.Param("address"))
 	_, err := helpers.SendCommand(context.Param("address"), "pictureoff")
 	if err != nil {
 		return err
