@@ -3,10 +3,10 @@
 	"info": {
 		"title": "Sony Control Microservice",
 		"description": "Interact with Sony display control protocols",
-		"version": "0.2"
+		"version": "0.1"
 	},
 	"host": "api.byu.edu:443",
-	"basePath": "/byuoitav-sony-control-microservice/0.2",
+	"basePath": "/byuoitav-sony-control-microservice/0.1",
 	"schemes": [
 		"https"
 	],
