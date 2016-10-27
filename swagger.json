@@ -235,9 +235,8 @@
 				"description": "Switch to a specified port on a specified device",
 				"parameters": [{
 					"$ref": "#/parameters/address"
-				},
-				{
-					"$ref": "#/parameters/port"
+				}, {
+				"$ref": "#/parameters/port"
 				}],
 				"tags": [
 					"Command",
@@ -274,9 +273,8 @@
 				"description": "Change the volume of a specified device by a specified difference amount",
 				"parameters": [{
 					"$ref": "#/parameters/address"
-				},
-				{
-					"$ref": "#/parameters/volumeDifference"
+				}, {
+				"$ref": "#/parameters/volumeDifference"
 				}],
 				"tags": [
 					"Command",
@@ -313,9 +311,8 @@
 				"description": "Set the default volume of a specified device",
 				"parameters": [{
 					"$ref": "#/parameters/address"
-				},
-				{
-					"$ref": "#/parameters/defaultVolume"
+				}, {
+				"$ref": "#/parameters/defaultVolume"
 				}],
 				"tags": [
 					"Command",
@@ -561,7 +558,7 @@
 					}
 				}
 			}
-		},
+		}
 	},
 	"definitions": {
 		"HATEOAS": {
