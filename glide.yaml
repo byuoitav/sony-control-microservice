@@ -1,0 +1,16 @@
+package: github.com/byuoitav/sony-control-microservice
+import:
+- package: github.com/byuoitav/hateoas
+- package: github.com/byuoitav/wso2jwt
+- package: github.com/jessemillar/health
+- package: github.com/jessemillar/jsonresp
+- package: github.com/labstack/echo
+  version: ^2.2.0
+  subpackages:
+  - engine/fasthttp
+  - middleware
+testImport:
+- package: github.com/stretchr/testify
+  version: ^1.1.4
+  subpackages:
+  - assert
