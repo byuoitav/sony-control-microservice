@@ -48,7 +48,7 @@ func SwitchInput(context echo.Context) error {
 	address := context.Param("address")
 	port := context.Param("port")
 
-	splitPort := strings.Split(port, ":")
+	splitPort := strings.Split(port, "!")
 
 	params := make(map[string]interface{})
 	params["uri"] = fmt.Sprintf("extInput:%s?port=%s", splitPort[0], splitPort[1])
@@ -133,16 +133,22 @@ func GetVolume(context echo.Context) error {
 		ID:      1,
 	}
 
+	log.Printf("%+v", payload)
+
 	resp, err := helpers.PostHTTP(context.Param("address"), payload, "audio")
 
 	parentResponse := helpers.SonyAudioResponse{}
+
+	log.Printf("%s", resp)
 
 	err = json.Unmarshal(resp, &parentResponse)
 	if err != nil {
 		return err
 	}
 
-	b, err := json.Marshal(parentResponse.Result)
+	log.Printf("%+v", parentResponse)
+
+	b, err := json.Marshal(parentResponse.Result[0])
 	if err != nil {
 		return err
 	}

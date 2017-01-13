@@ -12,8 +12,8 @@ import (
 
 //SonyAudioResponse is the parent struct returned when we query audio state
 type SonyAudioResponse struct {
-	Result []SonyAudioSettings `json:"result"`
-	ID     int                 `json:"id"`
+	Result [][]SonyAudioSettings `json:"result"`
+	ID     int                   `json:"id"`
 }
 
 //SonyAudioSettings is the child struct returned
