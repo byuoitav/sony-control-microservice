@@ -2,13 +2,13 @@ package main
 
 import (
 	"log"
+	"net/http"
 
+	"github.com/byuoitav/authmiddleware"
 	"github.com/byuoitav/hateoas"
 	"github.com/byuoitav/sony-control-microservice/handlers"
-	"github.com/byuoitav/wso2jwt"
 	"github.com/jessemillar/health"
 	"github.com/labstack/echo"
-	"github.com/labstack/echo/engine/fasthttp"
 	"github.com/labstack/echo/middleware"
 )
 
@@ -23,27 +23,32 @@ func main() {
 	router.Pre(middleware.RemoveTrailingSlash())
 	router.Use(middleware.CORS())
 
-	router.Get("/", hateoas.RootResponse)
-	router.Get("/health", health.Check)
+	// Use the `secure` routing group to require authentication
+	secure := router.Group("", echo.WrapMiddleware(authmiddleware.Authenticate))
 
-	router.Get("/:address/list/commands", handlers.GetCommands, wso2jwt.ValidateJWT())
-	router.Get("/:address/command/:command", handlers.SendCommand, wso2jwt.ValidateJWT())
-	router.Get("/:address/command/:command/count/:count", handlers.FloodCommand, wso2jwt.ValidateJWT())
+	router.GET("/", echo.WrapHandler(http.HandlerFunc(hateoas.RootResponse)))
+	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
 
-	router.Get("/:address/power/on", handlers.PowerOn, wso2jwt.ValidateJWT())
-	router.Get("/:address/power/standby", handlers.Standby, wso2jwt.ValidateJWT())
-	router.Get("/:address/input/:port", handlers.SwitchInput, wso2jwt.ValidateJWT())
-	router.Get("/:address/volume/set/:difference", handlers.SetVolume, wso2jwt.ValidateJWT())
-	router.Get("/:address/volume/calibrate/:default", handlers.CalibrateVolume, wso2jwt.ValidateJWT())
-	router.Get("/:address/volume/up", handlers.VolumeUp, wso2jwt.ValidateJWT())
-	router.Get("/:address/volume/down", handlers.VolumeDown, wso2jwt.ValidateJWT())
-	router.Get("/:address/volume/mute", handlers.VolumeMute, wso2jwt.ValidateJWT())
-	router.Get("/:address/volume/unmute", handlers.VolumeUnmute, wso2jwt.ValidateJWT())
-	router.Get("/:address/display/blank", handlers.BlankDisplay, wso2jwt.ValidateJWT())
-	router.Get("/:address/display/unblank", handlers.UnblankDisplay, wso2jwt.ValidateJWT())
+	secure.GET("/:address/list/commands", handlers.GetCommands)
+	secure.GET("/:address/command/:command", handlers.SendCommand)
+	secure.GET("/:address/command/:command/count/:count", handlers.FloodCommand)
 
-	log.Println("Sony Control microservice is listening on " + port)
-	server := fasthttp.New(port)
-	server.ReadBufferSize = 1024 * 10 // Needed to interface properly with WSO2
-	router.Run(server)
+	secure.GET("/:address/power/on", handlers.PowerOn)
+	secure.GET("/:address/power/standby", handlers.Standby)
+	secure.GET("/:address/input/:port", handlers.SwitchInput)
+	secure.GET("/:address/volume/set/:difference", handlers.SetVolume)
+	secure.GET("/:address/volume/calibrate/:default", handlers.CalibrateVolume)
+	secure.GET("/:address/volume/up", handlers.VolumeUp)
+	secure.GET("/:address/volume/down", handlers.VolumeDown)
+	secure.GET("/:address/volume/mute", handlers.VolumeMute)
+	secure.GET("/:address/volume/unmute", handlers.VolumeUnmute)
+	secure.GET("/:address/display/blank", handlers.BlankDisplay)
+	secure.GET("/:address/display/unblank", handlers.UnblankDisplay)
+
+	server := http.Server{
+		Addr:           port,
+		MaxHeaderBytes: 1024 * 10,
+	}
+
+	router.StartServer(&server)
 }
