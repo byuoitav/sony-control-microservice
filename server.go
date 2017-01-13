@@ -31,12 +31,13 @@ func main() {
 
 	secure.GET("/:address/power/on", handlers.PowerOn)
 	secure.GET("/:address/power/standby", handlers.Standby)
-	//secure.GET("/:address/input/:port", handlers.SwitchInput)
-	//secure.GET("/:address/volume/set/:value", handlers.SetVolume)
-	//secure.GET("/:address/volume/mute", handlers.VolumeMute)
-	//secure.GET("/:address/volume/unmute", handlers.VolumeUnmute)
-	//secure.GET("/:address/display/blank", handlers.BlankDisplay)
-	//secure.GET("/:address/display/unblank", handlers.UnblankDisplay)
+	secure.GET("/:address/input/:port", handlers.SwitchInput)
+	secure.GET("/:address/volume/set/:value", handlers.SetVolume)
+	secure.GET("/:address/volume/mute", handlers.VolumeMute)
+	secure.GET("/:address/volume/unmute", handlers.VolumeUnmute)
+	secure.GET("/:address/display/blank", handlers.BlankDisplay)
+	secure.GET("/:address/display/unblank", handlers.UnblankDisplay)
+	secure.GET("/:address/volume/get", handlers.GetVolume)
 
 	server := http.Server{
 		Addr:           port,
