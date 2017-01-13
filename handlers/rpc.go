@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"errors"
+	"encoding/json"
+	"fmt"
 	"log"
-	"strconv"
+	"strings"
 
 	"github.com/byuoitav/sony-control-microservice/helpers"
 	"github.com/labstack/echo"
@@ -11,104 +12,67 @@ import (
 
 func PowerOn(context echo.Context) error {
 	log.Printf("Powering on %s...", context.Param("address"))
-	_, err := helpers.SendCommand(context.Param("address"), "wakeup")
+
+	err := setPower(context.Param("address"), true)
 	if err != nil {
+		log.Printf("Error: %v", err.Error())
 		return err
 	}
+
 	log.Printf("Done.")
 	return nil
 }
 
+func setPower(address string, status bool) error {
+	params := make(map[string]interface{})
+	params["status"] = status
+
+	return BuildAndSendPayload(address, "system", "setPowerStatus", params)
+}
+
 func Standby(context echo.Context) error {
 	log.Printf("Powering off %s...", context.Param("address"))
-	_, err := helpers.SendCommand(context.Param("address"), "poweroff")
+
+	err := setPower(context.Param("address"), false)
 	if err != nil {
+		log.Printf("Error: %v", err.Error())
 		return err
 	}
+
 	log.Printf("Done.")
 	return nil
 }
 
 func SwitchInput(context echo.Context) error {
 	log.Printf("Switching input for %s to %s ...", context.Param("address"), context.Param("port"))
-	_, err := helpers.SendCommand(context.Param("address"), context.Param("port")) // Input must be hdmi1, hdmi2, etc.
+	address := context.Param("address")
+	port := context.Param("port")
+
+	splitPort := strings.Split(port, ":")
+
+	params := make(map[string]interface{})
+	params["uri"] = fmt.Sprintf("extInput:%s?port=%s", splitPort[0], splitPort[1])
+
+	err := BuildAndSendPayload(address, "avContent", "setPlayContent", params)
 	if err != nil {
 		return err
 	}
+
 	log.Printf("Done.")
 	return nil
 }
 
 func SetVolume(context echo.Context) error {
 	address := context.Param("address")
-	difference, err := strconv.Atoi(context.Param("difference"))
-	if err != nil {
-		return err
-	}
+	value := context.Param("value")
 
-	log.Printf("Setting volume for %s by %v...", address, difference)
-	//Setting volume up
-	if difference > 0 {
-		for i := 0; i < difference; i++ {
-			_, err := helpers.SendCommand(address, "volumeup")
-			if err != nil {
-				return err
-			}
-		}
-	} else if difference < 0 {
-		for i := 0; i > difference; i-- {
-			_, err := helpers.SendCommand(address, "volumedown")
-			if err != nil {
-				return err
-			}
-		}
-	}
-	log.Printf("Done.")
-	return nil
-}
+	log.Printf("Setting volume for %s to %v...", address, value)
 
-func CalibrateVolume(context echo.Context) error {
-	address := context.Param("address")
-	log.Printf("Calibrating volume for %s...", address)
-	def, err := strconv.Atoi(context.Param("default"))
-	if err != nil {
-		return err
-	}
-	if def < 0 || def > 100 {
-		return errors.New("Invalid default value, must be in range 0-100")
-	}
+	params := make(map[string]interface{})
+	params["target"] = "speaker"
+	params["volume"] = value
 
-	//drop volume to zero.
-	for i := 0; i < 125; i++ {
-		_, err := helpers.SendCommand(address, "volumedown")
-		if err != nil {
-			return err
-		}
-	}
-	//set voulme to 25
-	for i := 0; i < def; i++ {
-		_, err := helpers.SendCommand(address, "volumeup")
-		if err != nil {
-			return err
-		}
-	}
-	log.Printf("Done.")
-	return nil
-}
-
-func VolumeUp(context echo.Context) error {
-	log.Printf("Setting volume up for %s...", context.Param("address"))
-	_, err := helpers.SendCommand(context.Param("address"), "volumeup")
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func VolumeDown(context echo.Context) error {
-	log.Printf("Setting volume down for %s...", context.Param("address"))
-	_, err := helpers.SendCommand(context.Param("address"), "volumedown")
+	err := BuildAndSendPayload(address, "audio", "setAudioVolume", params)
 	if err != nil {
 		return err
 	}
@@ -116,19 +80,34 @@ func VolumeDown(context echo.Context) error {
 	log.Printf("Done.")
 	return nil
 }
+
 func VolumeUnmute(context echo.Context) error {
-	log.Printf("Unmuting %s...", context.Param("address"))
-	_, err := helpers.SendCommand(context.Param("address"), "mute")
+	address := context.Param("address")
+	log.Printf("Unmuting %s...", address)
+
+	err := setMute(address, false)
 	if err != nil {
+		log.Printf("Error: %v", err.Error())
 		return err
 	}
 
+	log.Printf("Done.")
 	return nil
 }
+
+func setMute(address string, status bool) error {
+	params := make(map[string]interface{})
+	params["status"] = status
+
+	return BuildAndSendPayload(address, "audio", "setAudioMute", params)
+}
+
 func VolumeMute(context echo.Context) error {
 	log.Printf("Muting %s...", context.Param("address"))
-	_, err := helpers.SendCommand(context.Param("address"), "mute")
+
+	err := setMute(context.Param("address"), true)
 	if err != nil {
+		log.Printf("Error: %v", err.Error())
 		return err
 	}
 
@@ -137,22 +116,53 @@ func VolumeMute(context echo.Context) error {
 }
 
 func BlankDisplay(context echo.Context) error {
-	log.Printf("Blanking %s...", context.Param("address"))
-	_, err := helpers.SendCommand(context.Param("address"), "pictureoff")
-	if err != nil {
-		return err
-	}
-
-	log.Printf("Done.")
-	return nil
+	return Standby(context)
 }
 
 func UnblankDisplay(context echo.Context) error {
-	log.Printf("unblanking %s...", context.Param("address"))
-	_, err := helpers.SendCommand(context.Param("address"), "pictureoff")
+	return PowerOn(context)
+}
+
+func GetVolume(context echo.Context) error {
+	log.Printf("Getting volume for %s...", context.Param("address"))
+
+	payload := helpers.SonyTVRequest{
+		Params:  []map[string]interface{}{},
+		Method:  "getVolumeInformation",
+		Version: "1.0",
+		ID:      1,
+	}
+
+	resp, err := helpers.PostHTTP(context.Param("address"), payload, "audio")
+
+	parentResponse := helpers.SonyAudioResponse{}
+
+	err = json.Unmarshal(resp, &parentResponse)
 	if err != nil {
 		return err
 	}
-	log.Printf("Done.")
+
+	b, err := json.Marshal(parentResponse.Result)
+	if err != nil {
+		return err
+	}
+
+	context.Response().Write(b)
+
+	log.Printf("Done")
 	return nil
+}
+
+func BuildAndSendPayload(address string, service string, method string, params map[string]interface{}) error {
+	payload := helpers.SonyTVRequest{
+		Params:  []map[string]interface{}{params},
+		Method:  method,
+		Version: "1.0",
+		ID:      1,
+	}
+
+	_, err := helpers.PostHTTP(address, payload, service)
+
+	return err
+
 }

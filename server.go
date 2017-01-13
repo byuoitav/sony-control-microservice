@@ -29,21 +29,14 @@ func main() {
 	router.GET("/", echo.WrapHandler(http.HandlerFunc(hateoas.RootResponse)))
 	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
 
-	secure.GET("/:address/list/commands", handlers.GetCommands)
-	secure.GET("/:address/command/:command", handlers.SendCommand)
-	secure.GET("/:address/command/:command/count/:count", handlers.FloodCommand)
-
 	secure.GET("/:address/power/on", handlers.PowerOn)
 	secure.GET("/:address/power/standby", handlers.Standby)
-	secure.GET("/:address/input/:port", handlers.SwitchInput)
-	secure.GET("/:address/volume/set/:difference", handlers.SetVolume)
-	secure.GET("/:address/volume/calibrate/:default", handlers.CalibrateVolume)
-	secure.GET("/:address/volume/up", handlers.VolumeUp)
-	secure.GET("/:address/volume/down", handlers.VolumeDown)
-	secure.GET("/:address/volume/mute", handlers.VolumeMute)
-	secure.GET("/:address/volume/unmute", handlers.VolumeUnmute)
-	secure.GET("/:address/display/blank", handlers.BlankDisplay)
-	secure.GET("/:address/display/unblank", handlers.UnblankDisplay)
+	//secure.GET("/:address/input/:port", handlers.SwitchInput)
+	//secure.GET("/:address/volume/set/:value", handlers.SetVolume)
+	//secure.GET("/:address/volume/mute", handlers.VolumeMute)
+	//secure.GET("/:address/volume/unmute", handlers.VolumeUnmute)
+	//secure.GET("/:address/display/blank", handlers.BlankDisplay)
+	//secure.GET("/:address/display/unblank", handlers.UnblankDisplay)
 
 	server := http.Server{
 		Addr:           port,
