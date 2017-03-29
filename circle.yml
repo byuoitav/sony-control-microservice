@@ -4,17 +4,47 @@ machine:
 
 dependencies:
     post:
-        - rm -r ~/.gradle || true
+        - rm -rf ~/.m2
+        - rm -rf ~/.go_workspace
+
+compile:
+    override:
+        - env GOOS=linux GOARCH=arm go build -v -o sony-control-microservice-arm
 
 test:
     override:
         - go test -v -race $(go list ./... | grep -v /vendor/)
 
 deployment:
-    production:
+    development:
         branch: master
         commands:
-            - env GOOS=linux GOARCH=arm go build -v .
+            - docker build -f Dockerfile-ARM -t byuoitav/rpi-sony-control-microservice:$CIRCLE_SHA1 .
+            - docker build -f Dockerfile-ARM -t byuoitav/rpi-sony-control-microservice:development .
+            - docker build -t byuoitav/sony-control-microservice:$CIRCLE_SHA1 .
+            - docker build -t byuoitav/sony-control-microservice:development .
+            - docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            - docker push byuoitav/sony-control-microservice:$CIRCLE_SHA1
+            - docker push byuoitav/sony-control-microservice:development
+            - docker push byuoitav/rpi-sony-control-microservice:$CIRCLE_SHA1
+            - docker push byuoitav/rpi-sony-control-microservice:development
+            - ./deploy-pi.sh development
+    stage:
+        branch: stage
+        commands:
+            - docker build -f Dockerfile-ARM -t byuoitav/rpi-sony-control-microservice:$CIRCLE_SHA1 .
+            - docker build -f Dockerfile-ARM -t byuoitav/rpi-sony-control-microservice:stage .
+            - docker build -t byuoitav/sony-control-microservice:$CIRCLE_SHA1 .
+            - docker build -t byuoitav/sony-control-microservice:stage .
+            - docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            - docker push byuoitav/sony-control-microservice:$CIRCLE_SHA1
+            - docker push byuoitav/sony-control-microservice:stage
+            - docker push byuoitav/rpi-sony-control-microservice:$CIRCLE_SHA1
+            - docker push byuoitav/rpi-sony-control-microservice:stage
+            - ./deploy-pi.sh stage
+    production:
+        branch: production
+        commands:
             - docker build -f Dockerfile-ARM -t byuoitav/rpi-sony-control-microservice:$CIRCLE_SHA1 .
             - docker build -f Dockerfile-ARM -t byuoitav/rpi-sony-control-microservice:latest .
             - docker build -t byuoitav/sony-control-microservice:$CIRCLE_SHA1 .
@@ -25,4 +55,4 @@ deployment:
             - docker push byuoitav/rpi-sony-control-microservice:$CIRCLE_SHA1
             - docker push byuoitav/rpi-sony-control-microservice:latest
             - ./deploy.sh $CIRCLE_PROJECT_REPONAME $CIRCLE_SHA1
-            - ./deploy-pi.sh
+            - ./deploy-pi.sh production
