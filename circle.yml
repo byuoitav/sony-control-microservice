@@ -4,12 +4,9 @@ machine:
 
 dependencies:
     post:
+        - env GOOS=linux GOARCH=arm go build -v -o sony-control-microservice-arm
         - rm -rf ~/.m2
         - rm -rf ~/.go_workspace
-
-compile:
-    override:
-        - env GOOS=linux GOARCH=arm go build -v -o sony-control-microservice-arm
 
 test:
     override:
