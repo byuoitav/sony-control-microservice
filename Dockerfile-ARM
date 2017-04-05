@@ -2,17 +2,13 @@ FROM resin/armv7hf-debian-qemu
 
 RUN [ "cross-build-start" ]
 
-RUN apt-get update
-RUN apt-get -y upgrade
-RUN apt-get -y install ca-certificates
-
 RUN mkdir -p /go
 ADD . /go
 
 WORKDIR /go
 
-CMD ["/go/sony-control-microservice"]
+CMD ["/go/sony-control-microservice-arm"]
 
-EXPOSE 8007
+EXPOSE 8007 
 
 RUN [ "cross-build-end" ]
