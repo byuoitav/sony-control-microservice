@@ -159,6 +159,25 @@ func GetVolume(context echo.Context) error {
 	return nil
 }
 
+func GetPower(context echo.Context) error {
+	return nil
+}
+
+func GetInput(context echo.Context) error {
+	return nil
+}
+
+func GetInputList(context echo.Context) error {
+	return nil
+}
+
+func GetMute(context echo.Context) error {
+	return nil
+}
+
+func GetBlank(context echo.Context) error {
+	return nil
+}
 func BuildAndSendPayload(address string, service string, method string, params map[string]interface{}) error {
 	payload := helpers.SonyTVRequest{
 		Params:  []map[string]interface{}{params},
