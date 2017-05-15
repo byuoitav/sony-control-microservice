@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 
 	"github.com/byuoitav/sony-control-microservice/helpers"
@@ -13,7 +14,7 @@ import (
 func PowerOn(context echo.Context) error {
 	log.Printf("Powering on %s...", context.Param("address"))
 
-	err := setPower(context.Param("address"), true)
+	err := helpers.SetPower(context.Param("address"), true)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
 		return err
@@ -21,19 +22,12 @@ func PowerOn(context echo.Context) error {
 
 	log.Printf("Done.")
 	return nil
-}
-
-func setPower(address string, status bool) error {
-	params := make(map[string]interface{})
-	params["status"] = status
-
-	return BuildAndSendPayload(address, "system", "setPowerStatus", params)
 }
 
 func Standby(context echo.Context) error {
 	log.Printf("Powering off %s...", context.Param("address"))
 
-	err := setPower(context.Param("address"), false)
+	err := helpers.SetPower(context.Param("address"), false)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
 		return err
@@ -41,6 +35,17 @@ func Standby(context echo.Context) error {
 
 	log.Printf("Done.")
 	return nil
+}
+
+func GetPower(context echo.Context) error {
+	log.Printf("Getting power status of %s...", context.Param("address"))
+
+	response, err := helpers.GetPower(context.Param("address"))
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
 }
 
 func SwitchInput(context echo.Context) error {
@@ -53,7 +58,7 @@ func SwitchInput(context echo.Context) error {
 	params := make(map[string]interface{})
 	params["uri"] = fmt.Sprintf("extInput:%s?port=%s", splitPort[0], splitPort[1])
 
-	err := BuildAndSendPayload(address, "avContent", "setPlayContent", params)
+	err := helpers.BuildAndSendPayload(address, "avContent", "setPlayContent", params)
 	if err != nil {
 		return err
 	}
@@ -72,7 +77,7 @@ func SetVolume(context echo.Context) error {
 	params["target"] = "speaker"
 	params["volume"] = value
 
-	err := BuildAndSendPayload(address, "audio", "setAudioVolume", params)
+	err := helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
 	if err != nil {
 		return err
 	}
@@ -99,7 +104,7 @@ func setMute(address string, status bool) error {
 	params := make(map[string]interface{})
 	params["status"] = status
 
-	return BuildAndSendPayload(address, "audio", "setAudioMute", params)
+	return helpers.BuildAndSendPayload(address, "audio", "setAudioMute", params)
 }
 
 func VolumeMute(context echo.Context) error {
@@ -159,16 +164,18 @@ func GetVolume(context echo.Context) error {
 	return nil
 }
 
-func BuildAndSendPayload(address string, service string, method string, params map[string]interface{}) error {
-	payload := helpers.SonyTVRequest{
-		Params:  []map[string]interface{}{params},
-		Method:  method,
-		Version: "1.0",
-		ID:      1,
-	}
+func GetInput(context echo.Context) error {
+	return nil
+}
 
-	_, err := helpers.PostHTTP(address, payload, service)
+func GetInputList(context echo.Context) error {
+	return nil
+}
 
-	return err
+func GetMute(context echo.Context) error {
+	return nil
+}
 
+func GetBlank(context echo.Context) error {
+	return nil
 }
