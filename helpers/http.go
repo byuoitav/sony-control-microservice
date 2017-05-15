@@ -58,8 +58,11 @@ func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, er
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
+
 	if err != nil {
 		return []byte{}, err
+	} else if response.StatusCode != http.StatusOK {
+		return []byte{}, errors.New(fmt.Spritnf("%v", body))
 	} else if body == nil {
 		return []byte{}, errors.New("Response from device was blank")
 	}
