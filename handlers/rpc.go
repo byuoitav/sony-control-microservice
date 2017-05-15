@@ -128,9 +128,12 @@ func UnblankDisplay(context echo.Context) error {
 }
 
 func GetVolume(context echo.Context) error {
-	log.Printf("Getting volume for %s...", context.Param("address"))
+	response, err := helpers.GetVolume(context.Param("address"))
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
 
-	return nil
+	return context.JSON(http.StatusOK, response)
 }
 
 func GetInput(context echo.Context) error {
