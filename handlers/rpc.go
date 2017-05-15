@@ -17,7 +17,7 @@ func PowerOn(context echo.Context) error {
 	err := helpers.SetPower(context.Param("address"), true)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
-		return err
+		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
 	}
 
 	log.Printf("Done.")
@@ -30,7 +30,7 @@ func Standby(context echo.Context) error {
 	err := helpers.SetPower(context.Param("address"), false)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
-		return err
+		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
 	}
 
 	log.Printf("Done.")
@@ -42,7 +42,7 @@ func GetPower(context echo.Context) error {
 
 	response, err := helpers.GetPower(context.Param("address"))
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
 	}
 
 	return context.JSON(http.StatusOK, response)
@@ -60,7 +60,7 @@ func SwitchInput(context echo.Context) error {
 
 	err := helpers.BuildAndSendPayload(address, "avContent", "setPlayContent", params)
 	if err != nil {
-		return err
+		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
 	}
 
 	log.Printf("Done.")
@@ -79,7 +79,7 @@ func SetVolume(context echo.Context) error {
 
 	err := helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
 	if err != nil {
-		return err
+		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
 	}
 
 	log.Printf("Done.")
@@ -93,7 +93,7 @@ func VolumeUnmute(context echo.Context) error {
 	err := setMute(address, false)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
-		return err
+		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
 	}
 
 	log.Printf("Done.")
@@ -113,7 +113,7 @@ func VolumeMute(context echo.Context) error {
 	err := setMute(context.Param("address"), true)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
-		return err
+		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
 	}
 
 	log.Printf("Done.")
@@ -148,14 +148,14 @@ func GetVolume(context echo.Context) error {
 
 	err = json.Unmarshal(resp, &parentResponse)
 	if err != nil {
-		return err
+		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
 	}
 
 	log.Printf("%+v", parentResponse)
 
 	b, err := json.Marshal(parentResponse.Result[0])
 	if err != nil {
-		return err
+		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
 	}
 
 	context.Response().Write(b)
