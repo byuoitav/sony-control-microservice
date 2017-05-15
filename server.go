@@ -29,6 +29,7 @@ func main() {
 	router.GET("/", echo.WrapHandler(http.HandlerFunc(hateoas.RootResponse)))
 	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
 
+	//functionality endpoints
 	secure.GET("/:address/power/on", handlers.PowerOn)
 	secure.GET("/:address/power/standby", handlers.Standby)
 	secure.GET("/:address/input/:port", handlers.SwitchInput)
@@ -37,7 +38,14 @@ func main() {
 	secure.GET("/:address/volume/unmute", handlers.VolumeUnmute)
 	secure.GET("/:address/display/blank", handlers.BlankDisplay)
 	secure.GET("/:address/display/unblank", handlers.UnblankDisplay)
-	secure.GET("/:address/volume/get", handlers.GetVolume)
+
+	//status endpoints
+	secure.GET("/:address/power/status", handlers.GetPower)
+	secure.GET("/:address/input/current", handlers.GetInput)
+	secure.GET("/:address/input/list", handlers.GetInputList)
+	secure.GET("/:address/volume/level", handlers.GetVolume)
+	secure.GET("/:address/volume/mute/status", handlers.GetMute)
+	secure.GET("/:address/display/status", handlers.GetBlank)
 
 	server := http.Server{
 		Addr:           port,
