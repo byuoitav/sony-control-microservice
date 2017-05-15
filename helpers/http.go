@@ -67,5 +67,19 @@ func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, er
 		return []byte{}, errors.New("Response from device was blank")
 	}
 
+	defer response.Body.Close()
 	return body, nil
+}
+
+func BuildAndSendPayload(address string, service string, method string, params map[string]interface{}) error {
+	payload := SonyTVRequest{
+		Params:  []map[string]interface{}{params},
+		Method:  method,
+		Version: "1.0",
+		ID:      1,
+	}
+
+	_, err := PostHTTP(address, payload, service)
+
+	return err
 }
