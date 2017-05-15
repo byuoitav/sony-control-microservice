@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"errors"
+	"log"
 	"strings"
 
 	"github.com/byuoitav/av-api/status"
@@ -31,14 +32,14 @@ func GetPower(address string) (status.PowerStatus, error) {
 	}
 
 	powerStatus := string(response)
-	if strings.Contains(powerStatus, "Active") {
+	log.Printf("Device returned: %s", powerStatus)
+	if strings.Contains(powerStatus, "active") {
 		output.Power = "on"
-	} else if strings.Contains(powerStatus, "Standby") {
+	} else if strings.Contains(powerStatus, "standby") {
 		output.Power = "standby"
 	} else {
 		return status.PowerStatus{}, errors.New("Error getting power status")
 	}
 
-	output.Power = string(response)
 	return output, nil
 }
