@@ -154,7 +154,7 @@ func GetMute(context echo.Context) error {
 }
 
 func GetBlank(context echo.Context) error {
-	response, err := helper.GetBlank(context.Param("address"))
+	response, err := helpers.GetBlankedStatus(context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
