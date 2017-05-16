@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -129,39 +128,12 @@ func UnblankDisplay(context echo.Context) error {
 }
 
 func GetVolume(context echo.Context) error {
-	log.Printf("Getting volume for %s...", context.Param("address"))
-
-	payload := helpers.SonyTVRequest{
-		Params:  []map[string]interface{}{},
-		Method:  "getVolumeInformation",
-		Version: "1.0",
-		ID:      1,
-	}
-
-	log.Printf("%+v", payload)
-
-	resp, err := helpers.PostHTTP(context.Param("address"), payload, "audio")
-
-	parentResponse := helpers.SonyAudioResponse{}
-
-	log.Printf("%s", resp)
-
-	err = json.Unmarshal(resp, &parentResponse)
+	response, err := helpers.GetVolume(context.Param("address"))
 	if err != nil {
-		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
+		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.Printf("%+v", parentResponse)
-
-	b, err := json.Marshal(parentResponse.Result[0])
-	if err != nil {
-		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
-	}
-
-	context.Response().Write(b)
-
-	log.Printf("Done")
-	return nil
+	return context.JSON(http.StatusOK, response)
 }
 
 func GetInput(context echo.Context) error {
