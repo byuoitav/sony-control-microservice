@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 )
@@ -25,6 +26,17 @@ type SonyAudioSettings struct {
 	MinVolume int    `json:"minVolume"`
 }
 
+type SonyAVContentSettings struct {
+	URI    string `json:"uri"`
+	Source string `json:"source"`
+	Title  string `json:"title"`
+}
+
+type SonyAVContentResponse struct {
+	Result []SonyAVContentSettings `json:"result"`
+	ID     int                     `json:"id"`
+}
+
 //SonyTVRequest represents the struct we need to send.
 type SonyTVRequest struct {
 	Method  string                   `json:"method"`
@@ -40,6 +52,8 @@ func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, er
 	if err != nil {
 		return []byte{}, err
 	}
+
+	log.Printf("%s", postBody)
 
 	addr := fmt.Sprintf("http://%s/sony/%s", address, service)
 
