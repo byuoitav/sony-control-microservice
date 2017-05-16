@@ -137,7 +137,13 @@ func GetVolume(context echo.Context) error {
 }
 
 func GetInput(context echo.Context) error {
-	return nil
+
+	response, err := helpers.GetInput(context.Param("address"))
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
 }
 
 func GetInputList(context echo.Context) error {
