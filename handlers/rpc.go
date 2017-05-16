@@ -145,9 +145,20 @@ func GetInputList(context echo.Context) error {
 }
 
 func GetMute(context echo.Context) error {
-	return nil
+	response, err := helpers.GetMute(context.Param("address"))
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
 }
 
 func GetBlank(context echo.Context) error {
+	response, err := helpers.GetBlankedStatus(context.Param("address"))
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
 	return nil
 }

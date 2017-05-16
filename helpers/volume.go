@@ -2,14 +2,36 @@ package helpers
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 
 	"github.com/byuoitav/av-api/status"
 )
 
 func GetVolume(address string) (status.Volume, error) {
+	log.Printf("Getting volume for %v", address)
+	parentResponse, err := getAudioInformation(address)
+	if err != nil {
+		return status.Volume{}, err
+	}
+	log.Printf("%v", parentResponse)
 
+	var output status.Volume
+	for _, outerResult := range parentResponse.Result {
+
+		for _, result := range outerResult {
+
+			if result.Target == "speaker" {
+
+				output.Volume = result.Volume
+			}
+		}
+	}
+	log.Printf("Done")
+
+	return output, nil
+}
+
+func getAudioInformation(address string) (SonyAudioResponse, error) {
 	payload := SonyTVRequest{
 		Params:  []map[string]interface{}{},
 		Method:  "getVolumeInformation",
@@ -26,36 +48,26 @@ func GetVolume(address string) (status.Volume, error) {
 	log.Printf("%s", resp)
 
 	err = json.Unmarshal(resp, &parentResponse)
+	return parentResponse, err
+
+}
+
+func GetMute(address string) (status.MuteStatus, error) {
+	log.Printf("Getting mute status for %v", address)
+	parentResponse, err := getAudioInformation(address)
 	if err != nil {
-		return status.Volume{}, err
+		return status.MuteStatus{}, err
 	}
-
-	log.Printf("%+v", parentResponse)
-
-	var output status.Volume
+	var output status.MuteStatus
 	for _, outerResult := range parentResponse.Result {
-
 		for _, result := range outerResult {
-
 			if result.Target == "speaker" {
-
-				output.Volume = result.Volume
-
+				output.Muted = result.Mute
 			}
-
 		}
-
 	}
 
-	if output.Volume == 0 {
+	log.Printf("Done")
 
-		return status.Volume{}, errors.New("Could not find volume")
-
-	} else {
-
-		log.Printf("Done")
-
-	}
-
-	return output, nil
+	return status.MuteStatus{}, nil
 }
