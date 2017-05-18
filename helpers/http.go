@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 )
@@ -25,6 +26,17 @@ type SonyAudioSettings struct {
 	MinVolume int    `json:"minVolume"`
 }
 
+type SonyAVContentSettings struct {
+	URI    string `json:"uri"`
+	Source string `json:"source"`
+	Title  string `json:"title"`
+}
+
+type SonyAVContentResponse struct {
+	Result []SonyAVContentSettings `json:"result"`
+	ID     int                     `json:"id"`
+}
+
 //SonyTVRequest represents the struct we need to send.
 type SonyTVRequest struct {
 	Method  string                   `json:"method"`
@@ -40,6 +52,8 @@ func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, er
 	if err != nil {
 		return []byte{}, err
 	}
+
+	log.Printf("%s", postBody)
 
 	addr := fmt.Sprintf("http://%s/sony/%s", address, service)
 
@@ -58,11 +72,28 @@ func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, er
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
+
 	if err != nil {
 		return []byte{}, err
+	} else if response.StatusCode != http.StatusOK {
+		return []byte{}, errors.New(string(body))
 	} else if body == nil {
 		return []byte{}, errors.New("Response from device was blank")
 	}
 
+	defer response.Body.Close()
 	return body, nil
+}
+
+func BuildAndSendPayload(address string, service string, method string, params map[string]interface{}) error {
+	payload := SonyTVRequest{
+		Params:  []map[string]interface{}{params},
+		Method:  method,
+		Version: "1.0",
+		ID:      1,
+	}
+
+	_, err := PostHTTP(address, payload, service)
+
+	return err
 }
