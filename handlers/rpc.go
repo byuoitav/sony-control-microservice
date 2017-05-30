@@ -120,11 +120,17 @@ func VolumeMute(context echo.Context) error {
 }
 
 func BlankDisplay(context echo.Context) error {
-	return Standby(context)
+	params := make(map[string]interface{})
+	params["mode"] = "pictureOff"
+
+	return helpers.BuildAndSendPayload(context.Param("address"), "system", "setPowerSavingMode", params)
 }
 
 func UnblankDisplay(context echo.Context) error {
-	return PowerOn(context)
+	params := make(map[string]interface{})
+	params["mode"] = "off"
+
+	return helpers.BuildAndSendPayload(context.Param("address"), "system", "setPowerSavingMode", params)
 }
 
 func GetVolume(context echo.Context) error {
