@@ -62,6 +62,7 @@ func GetMute(address string) (status.MuteStatus, error) {
 	for _, outerResult := range parentResponse.Result {
 		for _, result := range outerResult {
 			if result.Target == "speaker" {
+				log.Printf("local mute: %v", result.Mute)
 				output.Muted = result.Mute
 			}
 		}
@@ -69,5 +70,5 @@ func GetMute(address string) (status.MuteStatus, error) {
 
 	log.Printf("Done")
 
-	return status.MuteStatus{}, nil
+	return output, nil
 }
