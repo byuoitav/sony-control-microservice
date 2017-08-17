@@ -17,6 +17,10 @@ func SetPower(address string, status bool) (se.PowerStatus, error) {
 		return se.PowerStatus{}, err
 	}
 
+	log.Printf("Response: %s", response)
+
+	return se.PowerStatus{"junky"}, nil
+
 }
 
 func GetPower(address string) (se.PowerStatus, error) {
