@@ -72,6 +72,7 @@ func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, er
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
+	log.Printf("Body: %s", body)
 
 	if err != nil {
 		return []byte{}, err
