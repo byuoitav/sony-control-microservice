@@ -5,19 +5,23 @@ import (
 	"log"
 	"strings"
 
-	"github.com/byuoitav/av-api/status"
+	se "github.com/byuoitav/av-api/statusevaluators"
 )
 
-func SetPower(address string, status bool) error {
+func SetPower(address string, status bool) (se.PowerStatus, error) {
 	params := make(map[string]interface{})
 	params["status"] = status
 
-	return BuildAndSendPayload(address, "system", "setPowerStatus", params)
+	response, err := BuildAndSendPayload(address, "system", "setPowerStatus", params)
+	if err != nil {
+		return se.PowerStatus{}, err
+	}
+
 }
 
-func GetPower(address string) (status.PowerStatus, error) {
+func GetPower(address string) (se.PowerStatus, error) {
 
-	var output status.PowerStatus
+	var output se.PowerStatus
 
 	payload := SonyTVRequest{
 		Params:  []map[string]interface{}{},
@@ -28,7 +32,7 @@ func GetPower(address string) (status.PowerStatus, error) {
 
 	response, err := PostHTTP(address, payload, "system")
 	if err != nil {
-		return status.PowerStatus{}, err
+		return se.PowerStatus{}, err
 	}
 
 	powerStatus := string(response)
@@ -38,7 +42,7 @@ func GetPower(address string) (status.PowerStatus, error) {
 	} else if strings.Contains(powerStatus, "standby") {
 		output.Power = "standby"
 	} else {
-		return status.PowerStatus{}, errors.New("Error getting power status")
+		return se.PowerStatus{}, errors.New("Error getting power status")
 	}
 
 	return output, nil
