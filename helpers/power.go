@@ -8,11 +8,19 @@ import (
 	se "github.com/byuoitav/av-api/statusevaluators"
 )
 
-func SetPower(address string, status bool) error {
+func SetPower(address string, status bool) (se.PowerStatus, error) {
 	params := make(map[string]interface{})
 	params["status"] = status
 
-	return BuildAndSendPayload(address, "system", "setPowerStatus", params)
+	response, err := BuildAndSendPayload(address, "system", "setPowerStatus", params)
+	if err != nil {
+		return se.PowerStatus{}, err
+	}
+
+	log.Printf("Response: %s", response)
+
+	return se.PowerStatus{"junky"}, nil
+
 }
 
 func GetPower(address string) (se.PowerStatus, error) {
