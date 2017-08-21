@@ -46,7 +46,7 @@ type SonyTVRequest struct {
 }
 
 //PostHTTP just sends a request
-func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, error) {
+func PostHTTP(address string, payload SonyTVRequest, service string) error {
 
 	postBody, err := json.Marshal(payload)
 	if err != nil {
@@ -72,6 +72,7 @@ func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, er
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
+	log.Printf("body: %s", body)
 
 	if err != nil {
 		return []byte{}, err
@@ -82,7 +83,7 @@ func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, er
 	}
 
 	defer response.Body.Close()
-	return body, nil
+	return nil
 }
 
 func BuildAndSendPayload(address string, service string, method string, params map[string]interface{}) error {
@@ -93,7 +94,6 @@ func BuildAndSendPayload(address string, service string, method string, params m
 		ID:      1,
 	}
 
-	_, err := PostHTTP(address, payload, service)
+	return PostHTTP(address, payload, service)
 
-	return err
 }
