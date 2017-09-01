@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
+	se "github.com/byuoitav/av-api/statusevaluators"
 	"github.com/byuoitav/sony-control-microservice/helpers"
 	"github.com/labstack/echo"
 )
@@ -16,11 +18,11 @@ func PowerOn(context echo.Context) error {
 	err := helpers.SetPower(context.Param("address"), true)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
-		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
+		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	log.Printf("Done.")
-	return nil
+	return context.JSON(http.StatusOK, se.PowerStatus{"on"})
 }
 
 func Standby(context echo.Context) error {
@@ -29,11 +31,11 @@ func Standby(context echo.Context) error {
 	err := helpers.SetPower(context.Param("address"), false)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
-		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
+		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	log.Printf("Done.")
-	return nil
+	return context.JSON(http.StatusOK, se.PowerStatus{"standby"})
 }
 
 func GetPower(context echo.Context) error {
@@ -59,16 +61,23 @@ func SwitchInput(context echo.Context) error {
 
 	err := helpers.BuildAndSendPayload(address, "avContent", "setPlayContent", params)
 	if err != nil {
-		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
+		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	log.Printf("Done.")
-	return nil
+	return context.JSON(http.StatusOK, se.Input{port})
 }
 
 func SetVolume(context echo.Context) error {
 	address := context.Param("address")
 	value := context.Param("value")
+
+	volume, err := strconv.Atoi(value)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	} else if volume > 100 || volume < 0 {
+		return context.JSON(http.StatusBadRequest, "Error: volume must be a value from 0 to 100!")
+	}
 
 	log.Printf("Setting volume for %s to %v...", address, value)
 
@@ -76,13 +85,13 @@ func SetVolume(context echo.Context) error {
 	params["target"] = "speaker"
 	params["volume"] = value
 
-	err := helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
+	err = helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
 	if err != nil {
-		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
+		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	log.Printf("Done.")
-	return nil
+	return context.JSON(http.StatusOK, se.Volume{volume})
 }
 
 func VolumeUnmute(context echo.Context) error {
@@ -92,11 +101,11 @@ func VolumeUnmute(context echo.Context) error {
 	err := setMute(address, false)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
-		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
+		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	log.Printf("Done.")
-	return nil
+	return context.JSON(http.StatusOK, se.MuteStatus{false})
 }
 
 func setMute(address string, status bool) error {
@@ -112,25 +121,36 @@ func VolumeMute(context echo.Context) error {
 	err := setMute(context.Param("address"), true)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
-		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
+		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	log.Printf("Done.")
-	return nil
+	return context.JSON(http.StatusOK, se.MuteStatus{true})
 }
 
 func BlankDisplay(context echo.Context) error {
 	params := make(map[string]interface{})
 	params["mode"] = "pictureOff"
 
-	return helpers.BuildAndSendPayload(context.Param("address"), "system", "setPowerSavingMode", params)
+	err := helpers.BuildAndSendPayload(context.Param("address"), "system", "setPowerSavingMode", params)
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, se.BlankedStatus{true})
+
 }
 
 func UnblankDisplay(context echo.Context) error {
 	params := make(map[string]interface{})
 	params["mode"] = "off"
 
-	return helpers.BuildAndSendPayload(context.Param("address"), "system", "setPowerSavingMode", params)
+	err := helpers.BuildAndSendPayload(context.Param("address"), "system", "setPowerSavingMode", params)
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, se.BlankedStatus{false})
 }
 
 func GetVolume(context echo.Context) error {
