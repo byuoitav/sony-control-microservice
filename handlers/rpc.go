@@ -90,6 +90,16 @@ func SetVolume(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
+	//do the same for the headphone
+	params = make(map[string]interface{})
+	params["target"] = "headphone"
+	params["volume"] = value
+
+	err = helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
 	log.Printf("Done.")
 	return context.JSON(http.StatusOK, se.Volume{volume})
 }
