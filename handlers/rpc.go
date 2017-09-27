@@ -91,7 +91,7 @@ func SetVolume(context echo.Context) error {
 	}
 
 	//do the same for the headphone
-	params := make(map[string]interface{})
+	params = make(map[string]interface{})
 	params["target"] = "headphone"
 	params["volume"] = value
 
