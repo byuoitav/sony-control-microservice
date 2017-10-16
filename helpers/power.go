@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"strings"
+	"time"
 
 	se "github.com/byuoitav/av-api/statusevaluators"
 )
@@ -12,13 +13,39 @@ func SetPower(address string, status bool) error {
 	params := make(map[string]interface{})
 	params["status"] = status
 
-	err := BuildAndSendPayload(address, "system", "setPowerStatus", params)
+	//check to see if it's off, if it is we need to wait if we're turning the thing on after we return
+	preStatus, err := GetPower(address)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	err = BuildAndSendPayload(address, "system", "setPowerStatus", params)
+	if err != nil {
+		return err
+	}
 
+	postStatus, err := GetPower(address)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("%v", postStatus)
+
+	if status && postStatus.Power != "on" {
+		// do we want to retry the command
+		return errors.New("Power wasn't set successfully")
+	} else if !status && postStatus.Power != "standby" {
+		return errors.New("Power wasn't set successfully")
+	}
+
+	//we need to wait for a little bit to let the tv finish so it doesn't override
+
+	if preStatus.Power == "standby" && status {
+		log.Printf("Waiting....")
+		time.Sleep(1750 * time.Millisecond)
+	}
+
+	return nil
 }
 
 func GetPower(address string) (se.PowerStatus, error) {

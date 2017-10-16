@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	se "github.com/byuoitav/av-api/statusevaluators"
 	"github.com/byuoitav/sony-control-microservice/helpers"
@@ -108,7 +110,7 @@ func VolumeUnmute(context echo.Context) error {
 	address := context.Param("address")
 	log.Printf("Unmuting %s...", address)
 
-	err := setMute(address, false)
+	err := setMute(address, false, 4)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
@@ -118,17 +120,38 @@ func VolumeUnmute(context echo.Context) error {
 	return context.JSON(http.StatusOK, se.MuteStatus{false})
 }
 
-func setMute(address string, status bool) error {
+func setMute(address string, status bool, retryCount int) error {
 	params := make(map[string]interface{})
 	params["status"] = status
 
-	return helpers.BuildAndSendPayload(address, "audio", "setAudioMute", params)
+	initCount := retryCount
+
+	for retryCount >= 0 {
+		err := helpers.BuildAndSendPayload(address, "audio", "setAudioMute", params)
+		if err != nil {
+			return err
+		}
+		//we need to validate that it was actually muted
+		postStatus, err := helpers.GetMute(address)
+		if err != nil {
+			return err
+		}
+
+		if postStatus.Muted == status {
+			return nil
+		}
+		retryCount--
+
+		//wait for a short time
+		time.Sleep(10 * time.Millisecond)
+	}
+	return errors.New(fmt.Sprintf("Attempted to set mute status %v times, could not", initCount+1))
 }
 
 func VolumeMute(context echo.Context) error {
 	log.Printf("Muting %s...", context.Param("address"))
 
-	err := setMute(context.Param("address"), true)
+	err := setMute(context.Param("address"), true, 4)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
