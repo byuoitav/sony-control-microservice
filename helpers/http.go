@@ -73,6 +73,8 @@ func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, er
 
 	body, err := ioutil.ReadAll(response.Body)
 
+	log.Printf("Body: %s", body)
+
 	if err != nil {
 		return []byte{}, err
 	} else if response.StatusCode != http.StatusOK {
@@ -96,4 +98,5 @@ func BuildAndSendPayload(address string, service string, method string, params m
 	_, err := PostHTTP(address, payload, service)
 
 	return err
+
 }
