@@ -57,9 +57,9 @@ run: $(NAME)-bin
 deps: 
 	$(GOGET) -d -v
 ifneq "$(BRANCH)" "master"
-		# put vendored packages in here
-		# e.g. $(VENDOR) github.com/byuoitav/event-router-microservice
-		$(VENDOR) github.com/byuoitav/av-api
+	# put vendored packages in here
+	# e.g. $(VENDOR) github.com/byuoitav/event-router-microservice
+	$(VENDOR) github.com/byuoitav/av-api
 endif
 
 docker: docker-x86 docker-arm
