@@ -8,8 +8,8 @@ import (
 )
 
 type SonyBaseResult struct {
-	ID     int               `json:"id"`
-	Result map[string]string `json:"result"`
+	ID     int                 `json:"id"`
+	Result []map[string]string `json:"result"`
 }
 
 func GetBlankedStatus(address string) (se.BlankedStatus, error) {
@@ -34,7 +34,7 @@ func GetBlankedStatus(address string) (se.BlankedStatus, error) {
 	re := SonyBaseResult{}
 	err = json.Unmarshal(resp, &re)
 
-	if val, ok := re.Result["mode"]; ok {
+	if val, ok := re.Result[0]["mode"]; ok {
 		if val == "pictureOff" {
 			blanked.Blanked = true
 		} else {
