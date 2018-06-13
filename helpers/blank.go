@@ -2,6 +2,8 @@ package helpers
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 
 	se "github.com/byuoitav/av-api/statusevaluators"
@@ -33,6 +35,9 @@ func GetBlankedStatus(address string) (se.BlankedStatus, error) {
 
 	re := SonyBaseResult{}
 	err = json.Unmarshal(resp, &re)
+	if err != nil {
+		return blanked, errors.New(fmt.Sprintf("failed to unmarshal response from tv: %s", err))
+	}
 
 	if val, ok := re.Result[0]["mode"]; ok {
 		if val == "pictureOff" {
