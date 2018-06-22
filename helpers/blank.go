@@ -2,6 +2,8 @@ package helpers
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 
 	se "github.com/byuoitav/av-api/statusevaluators"
@@ -10,6 +12,7 @@ import (
 type SonyBaseResult struct {
 	ID     int                 `json:"id"`
 	Result []map[string]string `json:"result"`
+	Error  []interface{}       `json:"error"`
 }
 
 func GetBlankedStatus(address string) (se.BlankedStatus, error) {
@@ -33,6 +36,14 @@ func GetBlankedStatus(address string) (se.BlankedStatus, error) {
 
 	re := SonyBaseResult{}
 	err = json.Unmarshal(resp, &re)
+	if err != nil {
+		return blanked, errors.New(fmt.Sprintf("failed to unmarshal response from tv: %s", err))
+	}
+
+	// make sure there is a result
+	if len(re.Result) == 0 {
+		return blanked, errors.New(fmt.Sprintf("error response from tv: %s", re.Error))
+	}
 
 	if val, ok := re.Result[0]["mode"]; ok {
 		if val == "pictureOff" {
