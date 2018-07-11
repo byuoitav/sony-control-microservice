@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	se "github.com/byuoitav/av-api/statusevaluators"
+	"github.com/byuoitav/common/structs"
 )
 
 func SetPower(address string, status bool) error {
@@ -48,9 +48,9 @@ func SetPower(address string, status bool) error {
 	return nil
 }
 
-func GetPower(address string) (se.PowerStatus, error) {
+func GetPower(address string) (structs.PowerStatus, error) {
 
-	var output se.PowerStatus
+	var output structs.PowerStatus
 
 	payload := SonyTVRequest{
 		Params:  []map[string]interface{}{},
@@ -61,7 +61,7 @@ func GetPower(address string) (se.PowerStatus, error) {
 
 	response, err := PostHTTP(address, payload, "system")
 	if err != nil {
-		return se.PowerStatus{}, err
+		return structs.PowerStatus{}, err
 	}
 
 	powerStatus := string(response)
@@ -71,7 +71,7 @@ func GetPower(address string) (se.PowerStatus, error) {
 	} else if strings.Contains(powerStatus, "standby") {
 		output.Power = "standby"
 	} else {
-		return se.PowerStatus{}, errors.New("Error getting power status")
+		return structs.PowerStatus{}, errors.New("Error getting power status")
 	}
 
 	return output, nil

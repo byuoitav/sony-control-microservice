@@ -9,8 +9,9 @@ import (
 	"strings"
 	"time"
 
-	se "github.com/byuoitav/av-api/statusevaluators"
 	"github.com/byuoitav/sony-control-microservice/helpers"
+
+	"github.com/byuoitav/common/structs"
 	"github.com/labstack/echo"
 )
 
@@ -24,7 +25,7 @@ func PowerOn(context echo.Context) error {
 	}
 
 	log.Printf("Done.")
-	return context.JSON(http.StatusOK, se.PowerStatus{"on"})
+	return context.JSON(http.StatusOK, structs.PowerStatus{"on"})
 }
 
 func Standby(context echo.Context) error {
@@ -37,7 +38,7 @@ func Standby(context echo.Context) error {
 	}
 
 	log.Printf("Done.")
-	return context.JSON(http.StatusOK, se.PowerStatus{"standby"})
+	return context.JSON(http.StatusOK, structs.PowerStatus{"standby"})
 }
 
 func GetPower(context echo.Context) error {
@@ -67,7 +68,7 @@ func SwitchInput(context echo.Context) error {
 	}
 
 	log.Printf("Done.")
-	return context.JSON(http.StatusOK, se.Input{port})
+	return context.JSON(http.StatusOK, structs.InputStatus{port})
 }
 
 func SetVolume(context echo.Context) error {
@@ -103,7 +104,7 @@ func SetVolume(context echo.Context) error {
 	}
 
 	log.Printf("Done.")
-	return context.JSON(http.StatusOK, se.Volume{volume})
+	return context.JSON(http.StatusOK, structs.VolumeStatus{volume})
 }
 
 func VolumeUnmute(context echo.Context) error {
@@ -117,7 +118,7 @@ func VolumeUnmute(context echo.Context) error {
 	}
 
 	log.Printf("Done.")
-	return context.JSON(http.StatusOK, se.MuteStatus{false})
+	return context.JSON(http.StatusOK, structs.MuteStatus{false})
 }
 
 func setMute(address string, status bool, retryCount int) error {
@@ -158,7 +159,7 @@ func VolumeMute(context echo.Context) error {
 	}
 
 	log.Printf("Done.")
-	return context.JSON(http.StatusOK, se.MuteStatus{true})
+	return context.JSON(http.StatusOK, structs.MuteStatus{true})
 }
 
 func BlankDisplay(context echo.Context) error {
@@ -170,7 +171,7 @@ func BlankDisplay(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	return context.JSON(http.StatusOK, se.BlankedStatus{true})
+	return context.JSON(http.StatusOK, structs.BlankedStatus{true})
 
 }
 
@@ -183,7 +184,7 @@ func UnblankDisplay(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	return context.JSON(http.StatusOK, se.BlankedStatus{false})
+	return context.JSON(http.StatusOK, structs.BlankedStatus{false})
 }
 
 func GetVolume(context echo.Context) error {
