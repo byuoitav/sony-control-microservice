@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/byuoitav/common/structs"
+	"github.com/byuoitav/common/status"
 )
 
 func SetPower(address string, status bool) error {
@@ -19,7 +19,7 @@ func SetPower(address string, status bool) error {
 		return err
 	}
 
-	err = BuildAndSendPayload(address, "system", "setPowerStatus", params)
+	err = BuildAndSendPayload(address, "system", "setPower", params)
 	if err != nil {
 		return err
 	}
@@ -48,20 +48,20 @@ func SetPower(address string, status bool) error {
 	return nil
 }
 
-func GetPower(address string) (structs.PowerStatus, error) {
+func GetPower(address string) (status.Power, error) {
 
-	var output structs.PowerStatus
+	var output status.Power
 
 	payload := SonyTVRequest{
 		Params:  []map[string]interface{}{},
-		Method:  "getPowerStatus",
+		Method:  "getPower",
 		Version: "1.0",
 		ID:      1,
 	}
 
 	response, err := PostHTTP(address, payload, "system")
 	if err != nil {
-		return structs.PowerStatus{}, err
+		return status.Power{}, err
 	}
 
 	powerStatus := string(response)
@@ -71,7 +71,7 @@ func GetPower(address string) (structs.PowerStatus, error) {
 	} else if strings.Contains(powerStatus, "standby") {
 		output.Power = "standby"
 	} else {
-		return structs.PowerStatus{}, errors.New("Error getting power status")
+		return status.Power{}, errors.New("Error getting power status")
 	}
 
 	return output, nil

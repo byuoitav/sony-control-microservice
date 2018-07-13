@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/byuoitav/common/structs"
+	"github.com/byuoitav/common/status"
 )
 
-func GetVolume(address string) (structs.VolumeStatus, error) {
+func GetVolume(address string) (status.Volume, error) {
 	log.Printf("Getting volume for %v", address)
 	parentResponse, err := getAudioInformation(address)
 	if err != nil {
-		return structs.VolumeStatus{}, err
+		return status.Volume{}, err
 	}
 	log.Printf("%v", parentResponse)
 
-	var output structs.VolumeStatus
+	var output status.Volume
 	for _, outerResult := range parentResponse.Result {
 
 		for _, result := range outerResult {
@@ -52,13 +52,13 @@ func getAudioInformation(address string) (SonyAudioResponse, error) {
 
 }
 
-func GetMute(address string) (structs.MuteStatus, error) {
+func GetMute(address string) (status.Mute, error) {
 	log.Printf("Getting mute status for %v", address)
 	parentResponse, err := getAudioInformation(address)
 	if err != nil {
-		return structs.MuteStatus{}, err
+		return status.Mute{}, err
 	}
-	var output structs.MuteStatus
+	var output status.Mute
 	for _, outerResult := range parentResponse.Result {
 		for _, result := range outerResult {
 			if result.Target == "speaker" {
