@@ -19,7 +19,7 @@ func SetPower(address string, status bool) error {
 		return err
 	}
 
-	err = BuildAndSendPayload(address, "system", "setPower", params)
+	err = BuildAndSendPayload(address, "system", "setPowerStatus", params)
 	if err != nil {
 		return err
 	}
