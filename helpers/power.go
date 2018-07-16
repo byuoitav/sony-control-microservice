@@ -53,10 +53,9 @@ func GetPower(address string) (status.Power, error) {
 	var output status.Power
 
 	payload := SonyTVRequest{
-		Params:  []map[string]interface{}{},
-		Method:  "getPower",
-		Version: "1.0",
-		ID:      1,
+		Params: []map[string]interface{}{},
+		Method: "getPowerStatus", Version: "1.0",
+		ID: 1,
 	}
 
 	response, err := PostHTTP(address, payload, "system")
