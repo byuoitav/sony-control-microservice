@@ -46,7 +46,7 @@ type SonyTVRequest struct {
 }
 
 //PostHTTP just sends a request
-func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, error) {
+func PostHTTP(address string, payload interface{}, service string) ([]byte, error) {
 
 	postBody, err := json.Marshal(payload)
 	if err != nil {

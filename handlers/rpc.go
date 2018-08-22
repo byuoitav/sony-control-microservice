@@ -228,3 +228,19 @@ func GetBlank(context echo.Context) error {
 	return context.JSON(http.StatusOK, response)
 	return nil
 }
+
+////////////////////////////////////////////////////////////////////
+// New Web API Calls Below
+////////////////////////////////////////////////////////////////////
+
+// GetPowerAPI is the API call retreiving power status
+func GetPowerAPI(context echo.Context) error {
+	log.Printf("API - Getting power status of %s...", context.Param("address"))
+
+	response, err := helpers.GetPowerStatus(context.Param("address"))
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
