@@ -71,6 +71,7 @@ func SwitchInput(context echo.Context) error {
 	return context.JSON(http.StatusOK, status.Input{port})
 }
 
+// SetVolume is for setting volume for a TV
 func SetVolume(context echo.Context) error {
 	address := context.Param("address")
 	value := context.Param("value")
@@ -82,15 +83,16 @@ func SetVolume(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, "Error: volume must be a value from 0 to 100!")
 	}
 
-	log.L.Infof("Setting volume for %s to %v...", address, value)
+	log.L.Infof("Setting TV volume for %s to %v...", address, value)
 
 	params := make(map[string]interface{})
 	params["target"] = "speaker"
 	params["volume"] = value
 
-	err = helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
-	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+	//er instead of err because it didn't like err for some reason
+	er := helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
+	if er != nil {
+		return context.JSON(http.StatusInternalServerError, er.Error())
 	}
 
 	//do the same for the headphone
@@ -98,9 +100,36 @@ func SetVolume(context echo.Context) error {
 	params["target"] = "headphone"
 	params["volume"] = value
 
-	err = helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
+	er = helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
+	if er != nil {
+		return context.JSON(http.StatusInternalServerError, er.Error())
+	}
+
+	log.L.Infof("Done.")
+	return context.JSON(http.StatusOK, status.Volume{volume})
+}
+
+//SetVolumeProjector is for setting the volume for a projector
+func SetVolumeProjector(context echo.Context) error {
+	address := context.Param("address")
+	value := context.Param("value")
+
+	volume, err := strconv.Atoi(value)
 	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		return context.JSON(http.StatusBadRequest, err.Error())
+	} else if volume > 100 || volume < 0 {
+		return context.JSON(http.StatusBadRequest, "Error: volume must be a value from 0 to 100!")
+	}
+
+	log.L.Infof("Setting projector volume for %s to %v...", address, value)
+
+	params := make(map[string]interface{})
+	params["target"] = "speaker"
+	params["volume"] = value
+
+	er := helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, er.Error())
 	}
 
 	log.L.Infof("Done.")

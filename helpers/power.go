@@ -32,7 +32,7 @@ func SetPower(address string, status bool) *nerr.E {
 		return nerr.Translate(err)
 	}
 
-	//we need to wait for a little bit to let the tv finish so it doesn't override
+	//wait for 1.75 seconds to let the sony device to finish so it doesn't override
 	if currentStatus.Power == "on" && !status {
 		log.L.Infof("Waiting to go to standby....")
 		time.Sleep(1750 * time.Millisecond)
@@ -41,14 +41,16 @@ func SetPower(address string, status bool) *nerr.E {
 		time.Sleep(1750 * time.Millisecond)
 	}
 
+	// postStatus calls GetPower for the device status
 	postStatus, err := GetPower(address)
 	if err != nil {
 		return nerr.Translate(err)
 	}
 
+	// Logs out the status of the Sony Device (on or off)
 	log.L.Infof("%v", postStatus)
 
-	// There is some issue with the projector right here...
+	//
 	if status && postStatus.Power != "on" {
 		// do we want to retry the command
 		return nerr.Create(fmt.Sprintf("Power wasn't set successfully from %v", postStatus), "Failed") //nerr.Create()
@@ -72,6 +74,7 @@ func GetPower(address string) (status.Power, *nerr.E) {
 		Params:  []map[string]interface{}{},
 	}
 
+	// response from teh PostHTTP that gives us the status
 	response, err := PostHTTP(address, request, "system")
 	if err != nil {
 		return status.Power{}, err
@@ -79,8 +82,10 @@ func GetPower(address string) (status.Power, *nerr.E) {
 
 	powerStatus := string(response)
 
+	//Current status of the device
 	log.L.Debugf("Device returned: %s", powerStatus)
 
+	// Go through all the cases to return the right state
 	if strings.Contains(powerStatus, "active") {
 		powerOutput.Power = "on"
 	} else if strings.Contains(powerStatus, "standby") {

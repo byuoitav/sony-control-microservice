@@ -8,6 +8,7 @@ import (
 	"github.com/byuoitav/common/status"
 )
 
+// GetVolume gets volume level for Sony devices
 func GetVolume(address string) (status.Volume, *nerr.E) {
 	log.L.Infof("Getting volume for %v", address)
 	parentResponse, err := getAudioInformation(address)
@@ -59,6 +60,7 @@ func getAudioInformation(address string) (SonyAudioResponse, *nerr.E) {
 	return parentResponse, nil
 }
 
+// GetMute is for getting mute status
 func GetMute(address string) (status.Mute, *nerr.E) {
 	log.L.Infof("Getting mute status for %v", address)
 	parentResponse, err := getAudioInformation(address)

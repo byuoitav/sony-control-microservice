@@ -28,7 +28,8 @@ func main() {
 	secure.GET("/:address/power/on", handlers.PowerOn)
 	secure.GET("/:address/power/standby", handlers.Standby)
 	secure.GET("/:address/input/:port", handlers.SwitchInput)
-	secure.GET("/:address/volume/set/:value", handlers.SetVolume)
+	secure.GET("/:address/volume/set/:value", handlers.SetVolume)               //Volume control specifically for a Sony TV
+	secure.GET("/:address/volume-proj/set/:value", handlers.SetVolumeProjector) //Volume control specifically for a Sony projector
 	secure.GET("/:address/volume/mute", handlers.VolumeMute)
 	secure.GET("/:address/volume/unmute", handlers.VolumeUnmute)
 	secure.GET("/:address/display/blank", handlers.BlankDisplay)

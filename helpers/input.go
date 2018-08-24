@@ -9,6 +9,7 @@ import (
 	"github.com/byuoitav/common/status"
 )
 
+// GetInput gets the input status of Sony Devices
 func GetInput(address string) (status.Input, error) {
 	var output status.Input
 

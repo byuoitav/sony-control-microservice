@@ -9,12 +9,14 @@ import (
 	"github.com/byuoitav/common/status"
 )
 
+// SonyBaseResult struct is the basic SonyRequest kinda
 type SonyBaseResult struct {
 	ID     int                 `json:"id"`
 	Result []map[string]string `json:"result"`
 	Error  []interface{}       `json:"error"`
 }
 
+// GetBlanked returns the video mute status of the Sony Device
 func GetBlanked(address string) (status.Blanked, *nerr.E) {
 
 	var blanked status.Blanked
