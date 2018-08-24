@@ -3,9 +3,9 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"regexp"
 
+	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/status"
 )
 
@@ -20,7 +20,7 @@ func GetInput(address string) (status.Input, error) {
 		return output, nil
 	}
 
-	payload := SonyTVRequest{
+	payload := SonyRequest{
 		Params:  []map[string]interface{}{},
 		Method:  "getPlayingContentInfo",
 		ID:      1,
@@ -33,13 +33,13 @@ func GetInput(address string) (status.Input, error) {
 	}
 
 	var outputStruct SonyAVContentResponse
-	err = json.Unmarshal(response, &outputStruct)
+	er := json.Unmarshal(response, &outputStruct)
 	if err != nil || len(outputStruct.Result) < 1 {
-		return output, err
+		return output, er
 	}
 	//we need to parse the response for the value
 
-	log.Printf("%+v", outputStruct)
+	log.L.Infof("%+v", outputStruct)
 
 	regexStr := `extInput:(.*?)\?port=(.*)`
 	re := regexp.MustCompile(regexStr)

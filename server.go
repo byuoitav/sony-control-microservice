@@ -34,8 +34,6 @@ func main() {
 	secure.GET("/:address/display/blank", handlers.BlankDisplay)
 	secure.GET("/:address/display/unblank", handlers.UnblankDisplay)
 
-	// Web API functionality endpoints
-
 	//status endpoints
 	secure.GET("/:address/power/status", handlers.GetPower)
 	secure.GET("/:address/input/current", handlers.GetInput)
@@ -43,9 +41,6 @@ func main() {
 	secure.GET("/:address/volume/level", handlers.GetVolume)
 	secure.GET("/:address/volume/mute/status", handlers.GetMute)
 	secure.GET("/:address/display/status", handlers.GetBlank)
-
-	// Web API status endpoints
-	secure.GET("/:address/getPowerStatus/status", handlers.GetPowerAPI)
 
 	server := http.Server{
 		Addr:           port,

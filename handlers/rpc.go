@@ -3,7 +3,6 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -11,38 +10,39 @@ import (
 
 	"github.com/byuoitav/sony-control-microservice/helpers"
 
+	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/status"
 	"github.com/labstack/echo"
 )
 
 func PowerOn(context echo.Context) error {
-	log.Printf("Powering on %s...", context.Param("address"))
+	log.L.Infof("Powering on %s...", context.Param("address"))
 
 	err := helpers.SetPower(context.Param("address"), true)
 	if err != nil {
-		log.Printf("Error: %v", err.Error())
+		log.L.Errorf("Error: %v", err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.Printf("Done.")
+	log.L.Infof("Done.")
 	return context.JSON(http.StatusOK, status.Power{"on"})
 }
 
 func Standby(context echo.Context) error {
-	log.Printf("Powering off %s...", context.Param("address"))
+	log.L.Infof("Powering off %s...", context.Param("address"))
 
 	err := helpers.SetPower(context.Param("address"), false)
 	if err != nil {
-		log.Printf("Error: %v", err.Error())
+		log.L.Errorf("Error: %v", err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.Printf("Done.")
+	log.L.Infof("Done.")
 	return context.JSON(http.StatusOK, status.Power{"standby"})
 }
 
 func GetPower(context echo.Context) error {
-	log.Printf("Getting power status of %s...", context.Param("address"))
+	log.L.Infof("Getting power status of %s...", context.Param("address"))
 
 	response, err := helpers.GetPower(context.Param("address"))
 	if err != nil {
@@ -53,7 +53,7 @@ func GetPower(context echo.Context) error {
 }
 
 func SwitchInput(context echo.Context) error {
-	log.Printf("Switching input for %s to %s ...", context.Param("address"), context.Param("port"))
+	log.L.Infof("Switching input for %s to %s ...", context.Param("address"), context.Param("port"))
 	address := context.Param("address")
 	port := context.Param("port")
 
@@ -67,7 +67,7 @@ func SwitchInput(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.Printf("Done.")
+	log.L.Infof("Done.")
 	return context.JSON(http.StatusOK, status.Input{port})
 }
 
@@ -82,7 +82,7 @@ func SetVolume(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, "Error: volume must be a value from 0 to 100!")
 	}
 
-	log.Printf("Setting volume for %s to %v...", address, value)
+	log.L.Infof("Setting volume for %s to %v...", address, value)
 
 	params := make(map[string]interface{})
 	params["target"] = "speaker"
@@ -103,21 +103,21 @@ func SetVolume(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.Printf("Done.")
+	log.L.Infof("Done.")
 	return context.JSON(http.StatusOK, status.Volume{volume})
 }
 
 func VolumeUnmute(context echo.Context) error {
 	address := context.Param("address")
-	log.Printf("Unmuting %s...", address)
+	log.L.Infof("Unmuting %s...", address)
 
 	err := setMute(address, false, 4)
 	if err != nil {
-		log.Printf("Error: %v", err.Error())
+		log.L.Errorf("Error: %v", err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.Printf("Done.")
+	log.L.Infof("Done.")
 	return context.JSON(http.StatusOK, status.Mute{false})
 }
 
@@ -150,15 +150,15 @@ func setMute(address string, status bool, retryCount int) error {
 }
 
 func VolumeMute(context echo.Context) error {
-	log.Printf("Muting %s...", context.Param("address"))
+	log.L.Infof("Muting %s...", context.Param("address"))
 
 	err := setMute(context.Param("address"), true, 4)
 	if err != nil {
-		log.Printf("Error: %v", err.Error())
+		log.L.Errorf("Error: %v", err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.Printf("Done.")
+	log.L.Infof("Done.")
 	return context.JSON(http.StatusOK, status.Mute{true})
 }
 
@@ -227,20 +227,4 @@ func GetBlank(context echo.Context) error {
 
 	return context.JSON(http.StatusOK, response)
 	return nil
-}
-
-////////////////////////////////////////////////////////////////////
-// New Web API Calls Below
-////////////////////////////////////////////////////////////////////
-
-// GetPowerAPI is the API call retreiving power status
-func GetPowerAPI(context echo.Context) error {
-	log.Printf("API - Getting power status of %s...", context.Param("address"))
-
-	response, err := helpers.GetPowerStatus(context.Param("address"))
-	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
-	}
-
-	return context.JSON(http.StatusOK, response)
 }
