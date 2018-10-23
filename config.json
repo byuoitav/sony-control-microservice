@@ -1,0 +1,7 @@
+{
+    "name": "sony-control-microservice",
+    "port": ":8007",
+    "env-vars": [
+        "SONY_TV_PSK"
+    ]
+}
