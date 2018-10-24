@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/byuoitav/authmiddleware"
+	"github.com/byuoitav/common/status"
 	"github.com/byuoitav/hateoas"
 	"github.com/byuoitav/sony-control-microservice/handlers"
 	"github.com/jessemillar/health"
@@ -23,6 +24,8 @@ func main() {
 
 	router.GET("/", echo.WrapHandler(http.HandlerFunc(hateoas.RootResponse)))
 	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
+	router.GET("/status", status.DefaultStatusHandler)
+	router.GET("/mstatus", status.DefaultStatusHandler)
 
 	//functionality endpoints
 	secure.GET("/:address/power/on", handlers.PowerOn)
