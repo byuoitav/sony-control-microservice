@@ -3,7 +3,6 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -11,38 +10,61 @@ import (
 
 	"github.com/byuoitav/sony-control-microservice/helpers"
 
+	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/status"
+	"github.com/byuoitav/common/v2/auth"
 	"github.com/labstack/echo"
 )
 
 func PowerOn(context echo.Context) error {
-	log.Printf("Powering on %s...", context.Param("address"))
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
+
+	log.L.Debugf("Powering on %s...", context.Param("address"))
 
 	err := helpers.SetPower(context.Param("address"), true)
 	if err != nil {
-		log.Printf("Error: %v", err.Error())
+		log.L.Debugf("Error: %v", err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.Printf("Done.")
+	log.L.Debugf("Done.")
 	return context.JSON(http.StatusOK, status.Power{"on"})
 }
 
 func Standby(context echo.Context) error {
-	log.Printf("Powering off %s...", context.Param("address"))
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
+
+	log.L.Debugf("Powering off %s...", context.Param("address"))
 
 	err := helpers.SetPower(context.Param("address"), false)
 	if err != nil {
-		log.Printf("Error: %v", err.Error())
+		log.L.Debugf("Error: %v", err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.Printf("Done.")
+	log.L.Debugf("Done.")
 	return context.JSON(http.StatusOK, status.Power{"standby"})
 }
 
 func GetPower(context echo.Context) error {
-	log.Printf("Getting power status of %s...", context.Param("address"))
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
+
+	log.L.Debugf("Getting power status of %s...", context.Param("address"))
 
 	response, err := helpers.GetPower(context.Param("address"))
 	if err != nil {
@@ -53,7 +75,14 @@ func GetPower(context echo.Context) error {
 }
 
 func SwitchInput(context echo.Context) error {
-	log.Printf("Switching input for %s to %s ...", context.Param("address"), context.Param("port"))
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
+
+	log.L.Debugf("Switching input for %s to %s ...", context.Param("address"), context.Param("port"))
 	address := context.Param("address")
 	port := context.Param("port")
 
@@ -67,11 +96,18 @@ func SwitchInput(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.Printf("Done.")
+	log.L.Debugf("Done.")
 	return context.JSON(http.StatusOK, status.Input{port})
 }
 
 func SetVolume(context echo.Context) error {
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
+
 	address := context.Param("address")
 	value := context.Param("value")
 
@@ -82,7 +118,7 @@ func SetVolume(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, "Error: volume must be a value from 0 to 100!")
 	}
 
-	log.Printf("Setting volume for %s to %v...", address, value)
+	log.L.Debugf("Setting volume for %s to %v...", address, value)
 
 	params := make(map[string]interface{})
 	params["target"] = "speaker"
@@ -103,25 +139,39 @@ func SetVolume(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.Printf("Done.")
+	log.L.Debugf("Done.")
 	return context.JSON(http.StatusOK, status.Volume{volume})
 }
 
 func VolumeUnmute(context echo.Context) error {
-	address := context.Param("address")
-	log.Printf("Unmuting %s...", address)
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
 
-	err := setMute(address, false, 4)
+	address := context.Param("address")
+	log.L.Debugf("Unmuting %s...", address)
+
+	err := setMute(context, address, false, 4)
 	if err != nil {
-		log.Printf("Error: %v", err.Error())
+		log.L.Debugf("Error: %v", err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.Printf("Done.")
+	log.L.Debugf("Done.")
 	return context.JSON(http.StatusOK, status.Mute{false})
 }
 
-func setMute(address string, status bool, retryCount int) error {
+func setMute(context echo.Context, address string, status bool, retryCount int) error {
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
+
 	params := make(map[string]interface{})
 	params["status"] = status
 
@@ -150,19 +200,33 @@ func setMute(address string, status bool, retryCount int) error {
 }
 
 func VolumeMute(context echo.Context) error {
-	log.Printf("Muting %s...", context.Param("address"))
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
 
-	err := setMute(context.Param("address"), true, 4)
+	log.L.Debugf("Muting %s...", context.Param("address"))
+
+	err := setMute(context, context.Param("address"), true, 4)
 	if err != nil {
-		log.Printf("Error: %v", err.Error())
+		log.L.Debugf("Error: %v", err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.Printf("Done.")
+	log.L.Debugf("Done.")
 	return context.JSON(http.StatusOK, status.Mute{true})
 }
 
 func BlankDisplay(context echo.Context) error {
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
+
 	params := make(map[string]interface{})
 	params["mode"] = "pictureOff"
 
@@ -176,6 +240,13 @@ func BlankDisplay(context echo.Context) error {
 }
 
 func UnblankDisplay(context echo.Context) error {
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
+
 	params := make(map[string]interface{})
 	params["mode"] = "off"
 
@@ -188,6 +259,13 @@ func UnblankDisplay(context echo.Context) error {
 }
 
 func GetVolume(context echo.Context) error {
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "read-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
+
 	response, err := helpers.GetVolume(context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
@@ -197,6 +275,12 @@ func GetVolume(context echo.Context) error {
 }
 
 func GetInput(context echo.Context) error {
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "read-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
 
 	response, err := helpers.GetInput(context.Param("address"))
 	if err != nil {
@@ -207,10 +291,18 @@ func GetInput(context echo.Context) error {
 }
 
 func GetInputList(context echo.Context) error {
+
 	return nil
 }
 
 func GetMute(context echo.Context) error {
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "read-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
+
 	response, err := helpers.GetMute(context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
@@ -220,6 +312,13 @@ func GetMute(context echo.Context) error {
 }
 
 func GetBlank(context echo.Context) error {
+	if ok, err := auth.CheckAuthForLocalEndpoints(context, "read-state"); !ok {
+		if err != nil {
+			log.L.Warnf("Problem getting auth: %v", err.Error())
+		}
+		return context.String(http.StatusUnauthorized, "unauthorized")
+	}
+
 	response, err := helpers.GetBlanked(context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
