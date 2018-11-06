@@ -24,7 +24,7 @@ func PowerOn(context echo.Context) error {
 		return context.String(http.StatusUnauthorized, "unauthorized")
 	}
 
-	log.L.Debugf("Powering on %s...", context.Param("address"))
+	log.L.Infof("Powering on %s...", context.Param("address"))
 
 	err := helpers.SetPower(context.Param("address"), true)
 	if err != nil {
@@ -44,7 +44,7 @@ func Standby(context echo.Context) error {
 		return context.String(http.StatusUnauthorized, "unauthorized")
 	}
 
-	log.L.Debugf("Powering off %s...", context.Param("address"))
+	log.L.Infof("Powering off %s...", context.Param("address"))
 
 	err := helpers.SetPower(context.Param("address"), false)
 	if err != nil {
@@ -52,7 +52,7 @@ func Standby(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	log.L.Debugf("Done.")
+	log.L.Infof("Done.")
 	return context.JSON(http.StatusOK, status.Power{"standby"})
 }
 
@@ -64,7 +64,7 @@ func GetPower(context echo.Context) error {
 		return context.String(http.StatusUnauthorized, "unauthorized")
 	}
 
-	log.L.Debugf("Getting power status of %s...", context.Param("address"))
+	log.L.Infof("Getting power status of %s...", context.Param("address"))
 
 	response, err := helpers.GetPower(context.Param("address"))
 	if err != nil {
@@ -82,7 +82,7 @@ func SwitchInput(context echo.Context) error {
 		return context.String(http.StatusUnauthorized, "unauthorized")
 	}
 
-	log.L.Debugf("Switching input for %s to %s ...", context.Param("address"), context.Param("port"))
+	log.L.Infof("Switching input for %s to %s ...", context.Param("address"), context.Param("port"))
 	address := context.Param("address")
 	port := context.Param("port")
 
