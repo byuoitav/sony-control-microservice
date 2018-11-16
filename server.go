@@ -4,30 +4,35 @@ import (
 	"net/http"
 
 	"github.com/byuoitav/common"
+	"github.com/byuoitav/common/log"
+	"github.com/byuoitav/common/v2/auth"
 	"github.com/byuoitav/sony-control-microservice/handlers"
 )
 
 func main() {
+	log.SetLevel("debug")
 	port := ":8007"
 	router := common.NewRouter()
 
 	// functionality endpoints
-	router.GET("/:address/power/on", handlers.PowerOn)
-	router.GET("/:address/power/standby", handlers.Standby)
-	router.GET("/:address/input/:port", handlers.SwitchInput)
-	router.GET("/:address/volume/set/:value", handlers.SetVolume)
-	router.GET("/:address/volume/mute", handlers.VolumeMute)
-	router.GET("/:address/volume/unmute", handlers.VolumeUnmute)
-	router.GET("/:address/display/blank", handlers.BlankDisplay)
-	router.GET("/:address/display/unblank", handlers.UnblankDisplay)
+	write := router.Group("", auth.AuthorizeRequest("write-state", "room", auth.LookupResourceFromAddress))
+	write.GET("/:address/power/on", handlers.PowerOn)
+	write.GET("/:address/power/standby", handlers.Standby)
+	write.GET("/:address/input/:port", handlers.SwitchInput)
+	write.GET("/:address/volume/set/:value", handlers.SetVolume)
+	write.GET("/:address/volume/mute", handlers.VolumeMute)
+	write.GET("/:address/volume/unmute", handlers.VolumeUnmute)
+	write.GET("/:address/display/blank", handlers.BlankDisplay)
+	write.GET("/:address/display/unblank", handlers.UnblankDisplay)
 
 	// status endpoints
-	router.GET("/:address/power/status", handlers.GetPower)
-	router.GET("/:address/input/current", handlers.GetInput)
-	router.GET("/:address/input/list", handlers.GetInputList)
-	router.GET("/:address/volume/level", handlers.GetVolume)
-	router.GET("/:address/volume/mute/status", handlers.GetMute)
-	router.GET("/:address/display/status", handlers.GetBlank)
+	read := router.Group("", auth.AuthorizeRequest("read-state", "room", auth.LookupResourceFromAddress))
+	read.GET("/:address/power/status", handlers.GetPower)
+	read.GET("/:address/input/current", handlers.GetInput)
+	read.GET("/:address/input/list", handlers.GetInputList)
+	read.GET("/:address/volume/level", handlers.GetVolume)
+	read.GET("/:address/volume/mute/status", handlers.GetMute)
+	read.GET("/:address/display/status", handlers.GetBlank)
 
 	server := http.Server{
 		Addr:           port,
