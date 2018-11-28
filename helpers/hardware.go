@@ -31,6 +31,7 @@ func GetHardwareInfo(address string) (structs.HardwareInfo, *nerr.E) {
 
 	toReturn.ModelName = systemInfo.Model
 	toReturn.SerialNumber = systemInfo.Serial
+	toReturn.FirmwareVersion = systemInfo.Generation
 
 	// get Sony TV network settings
 	networkInfo, err := getNetworkInfo(address)
@@ -42,6 +43,7 @@ func GetHardwareInfo(address string) (structs.HardwareInfo, *nerr.E) {
 	toReturn.NetworkInfo = structs.NetworkInfo{
 		IPAddress:  networkInfo.IPv4,
 		MACAddress: networkInfo.HardwareAddress,
+		Gateway:    networkInfo.Gateway,
 		DNS:        networkInfo.DNS,
 	}
 
@@ -60,7 +62,7 @@ func GetHardwareInfo(address string) (structs.HardwareInfo, *nerr.E) {
 }
 
 func getSystemInfo(address string) (SonySystemInformation, *nerr.E) {
-	var system SonySystemInformation
+	var system SonyTVSystemResponse
 
 	payload := SonyTVRequest{
 		Params: []map[string]interface{}{},
@@ -78,7 +80,7 @@ func getSystemInfo(address string) (SonySystemInformation, *nerr.E) {
 		return SonySystemInformation{}, nerr.Translate(err)
 	}
 
-	return system, nil
+	return system.Result[0], nil
 }
 
 func getNetworkInfo(address string) (SonyTVNetworkInformation, *nerr.E) {
