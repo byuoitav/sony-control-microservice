@@ -3,8 +3,9 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"regexp"
+
+	"github.com/byuoitav/common/log"
 
 	"github.com/byuoitav/common/status"
 )
@@ -39,7 +40,7 @@ func GetInput(address string) (status.Input, error) {
 	}
 	//we need to parse the response for the value
 
-	log.Printf("%+v", outputStruct)
+	log.L.Infof("%+v", outputStruct)
 
 	regexStr := `extInput:(.*?)\?port=(.*)`
 	re := regexp.MustCompile(regexStr)

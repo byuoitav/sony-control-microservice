@@ -33,6 +33,7 @@ func main() {
 	read.GET("/:address/volume/level", handlers.GetVolume)
 	read.GET("/:address/volume/mute/status", handlers.GetMute)
 	read.GET("/:address/display/status", handlers.GetBlank)
+	read.GET("/:address/hardware", handlers.GetHardwareInfo)
 
 	server := http.Server{
 		Addr:           port,

@@ -226,3 +226,12 @@ func GetBlank(context echo.Context) error {
 
 	return context.JSON(http.StatusOK, response)
 }
+
+func GetHardwareInfo(context echo.Context) error {
+	response, err := helpers.GetHardwareInfo(context.Param("address"))
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
