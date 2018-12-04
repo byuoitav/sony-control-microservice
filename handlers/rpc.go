@@ -196,6 +196,7 @@ func GetVolume(context echo.Context) error {
 	return context.JSON(http.StatusOK, response)
 }
 
+// GetInput gets the input that is currently being shown on the TV
 func GetInput(context echo.Context) error {
 	response, err := helpers.GetInput(context.Param("address"))
 	if err != nil {
@@ -229,6 +230,16 @@ func GetBlank(context echo.Context) error {
 
 func GetHardwareInfo(context echo.Context) error {
 	response, err := helpers.GetHardwareInfo(context.Param("address"))
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
+// GetActiveInput determines if the current input on the TV is active or no
+func GetActiveInput(context echo.Context) error {
+	response, err := helpers.GetActiveInput(context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}

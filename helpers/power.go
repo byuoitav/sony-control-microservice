@@ -30,7 +30,7 @@ func SetPower(address string, status bool) error {
 		return err
 	}
 
-	log.L.Infof("%v", postStatus)
+	log.L.Debugf("%v", postStatus)
 
 	if status && postStatus.Power != "on" {
 		// do we want to retry the command
@@ -65,7 +65,7 @@ func GetPower(address string) (status.Power, error) {
 	}
 
 	powerStatus := string(response)
-	log.L.Infof("Device returned: %s", powerStatus)
+	log.L.Debugf("Device returned: %s", powerStatus)
 	if strings.Contains(powerStatus, "active") {
 		output.Power = "on"
 	} else if strings.Contains(powerStatus, "standby") {
@@ -73,6 +73,8 @@ func GetPower(address string) (status.Power, error) {
 	} else {
 		return status.Power{}, errors.New("Error getting power status")
 	}
+
+	log.L.Infof("Power status of %s: %s", address, output.Power)
 
 	return output, nil
 }

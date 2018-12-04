@@ -6,10 +6,12 @@ import (
 	"regexp"
 
 	"github.com/byuoitav/common/log"
+	"github.com/byuoitav/common/nerr"
 
 	"github.com/byuoitav/common/status"
 )
 
+// GetInput gets the input that is currently being shown on the TV
 func GetInput(address string) (status.Input, error) {
 	var output status.Input
 
@@ -40,13 +42,64 @@ func GetInput(address string) (status.Input, error) {
 	}
 	//we need to parse the response for the value
 
-	log.L.Infof("%+v", outputStruct)
+	log.L.Debugf("%+v", outputStruct)
 
 	regexStr := `extInput:(.*?)\?port=(.*)`
 	re := regexp.MustCompile(regexStr)
 
 	matches := re.FindStringSubmatch(outputStruct.Result[0].URI)
 	output.Input = fmt.Sprintf("%v!%v", matches[1], matches[2])
+
+	log.L.Infof("Current Input for %s: %s", address, output.Input)
+
+	return output, nil
+}
+
+// GetActiveInput determines if the current input on the TV is active or not
+func GetActiveInput(address string) (status.ActiveInput, *nerr.E) {
+	var output status.ActiveInput
+
+	currentInput, err := GetInput(address)
+	if err != nil {
+		return output, nerr.Translate(err).Add("Failed to get the current input")
+	}
+
+	payload := SonyTVRequest{
+		Params:  []map[string]interface{}{},
+		Method:  "getCurrentExternalInputsStatus",
+		ID:      1,
+		Version: "1.1",
+	}
+
+	response, err := PostHTTP(address, payload, "avContent")
+	if err != nil {
+		return output, nerr.Translate(err)
+	}
+
+	var outputStruct SonyMultiAVContentResponse
+	err = json.Unmarshal(response, &outputStruct)
+	if err != nil || len(outputStruct.Result) < 1 {
+		return output, nerr.Translate(err)
+	}
+	//we need to parse the response for the value
+
+	log.L.Debugf("%+v", outputStruct)
+
+	regexStr := `extInput:(.*?)\?port=(.*)`
+	re := regexp.MustCompile(regexStr)
+
+	for _, result := range outputStruct.Result[0] {
+		if result.Status == "true" {
+			matches := re.FindStringSubmatch(result.URI)
+			tempActive := fmt.Sprintf("%v!%v", matches[1], matches[2])
+
+			if tempActive == currentInput.Input {
+				output.ActiveInput = tempActive
+			}
+		}
+	}
+
+	log.L.Infof("Active Input for %s: %s", address, output.ActiveInput)
 
 	return output, nil
 }

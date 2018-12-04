@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	log.SetLevel("debug")
 	port := ":8007"
 	router := common.NewRouter()
 
@@ -30,10 +29,15 @@ func main() {
 	read.GET("/:address/power/status", handlers.GetPower)
 	read.GET("/:address/input/current", handlers.GetInput)
 	read.GET("/:address/input/list", handlers.GetInputList)
+	read.GET("/:address/input/active", handlers.GetActiveInput)
 	read.GET("/:address/volume/level", handlers.GetVolume)
 	read.GET("/:address/volume/mute/status", handlers.GetMute)
 	read.GET("/:address/display/status", handlers.GetBlank)
 	read.GET("/:address/hardware", handlers.GetHardwareInfo)
+
+	// log level endpoints
+	router.PUT("/log-level/:level", log.SetLogLevel)
+	router.GET("/log-level", log.GetLogLevel)
 
 	server := http.Server{
 		Addr:           port,
