@@ -9,6 +9,7 @@ import (
 	"github.com/byuoitav/common/nerr"
 
 	"github.com/byuoitav/common/status"
+	"github.com/byuoitav/common/structs"
 )
 
 // GetInput gets the input that is currently being shown on the TV
@@ -55,14 +56,9 @@ func GetInput(address string) (status.Input, error) {
 	return output, nil
 }
 
-// GetActiveInput determines if the current input on the TV is active or not
-func GetActiveInput(address string) (status.ActiveInput, *nerr.E) {
-	var output status.ActiveInput
-
-	currentInput, err := GetInput(address)
-	if err != nil {
-		return output, nerr.Translate(err).Add("Failed to get the current input")
-	}
+// GetActiveSignal determines if the current input on the TV is active or not
+func GetActiveSignal(address, port string) (structs.ActiveSignal, *nerr.E) {
+	var output structs.ActiveSignal
 
 	payload := SonyTVRequest{
 		Params:  []map[string]interface{}{},
@@ -93,13 +89,9 @@ func GetActiveInput(address string) (status.ActiveInput, *nerr.E) {
 			matches := re.FindStringSubmatch(result.URI)
 			tempActive := fmt.Sprintf("%v!%v", matches[1], matches[2])
 
-			if tempActive == currentInput.Input {
-				output.ActiveInput = tempActive
-			}
+			output.Active = (tempActive == port)
 		}
 	}
-
-	log.L.Infof("Active Input for %s: %s", address, output.ActiveInput)
 
 	return output, nil
 }

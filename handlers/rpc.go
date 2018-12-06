@@ -237,9 +237,9 @@ func GetHardwareInfo(context echo.Context) error {
 	return context.JSON(http.StatusOK, response)
 }
 
-// GetActiveInput determines if the current input on the TV is active or no
-func GetActiveInput(context echo.Context) error {
-	response, err := helpers.GetActiveInput(context.Param("address"))
+// GetActiveSignal determines if the current input on the TV is active or no
+func GetActiveSignal(context echo.Context) error {
+	response, err := helpers.GetActiveSignal(context.Param("address"), context.Param("port"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
