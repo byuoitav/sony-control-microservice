@@ -29,7 +29,7 @@ func main() {
 	read.GET("/:address/power/status", handlers.GetPower)
 	read.GET("/:address/input/current", handlers.GetInput)
 	read.GET("/:address/input/list", handlers.GetInputList)
-	read.GET("/:address/input/:port/active", handlers.GetActiveSignal)
+	read.GET("/:address/active/:port", handlers.GetActiveSignal)
 	read.GET("/:address/volume/level", handlers.GetVolume)
 	read.GET("/:address/volume/mute/status", handlers.GetMute)
 	read.GET("/:address/display/status", handlers.GetBlank)
