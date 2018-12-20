@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+
+	"github.com/byuoitav/common/log"
 
 	"github.com/byuoitav/common/status"
 )
@@ -26,11 +27,11 @@ func GetBlanked(address string) (status.Blanked, error) {
 		ID:      1,
 	}
 
-	log.Printf("%+v", payload)
+	log.L.Infof("%+v", payload)
 
 	resp, err := PostHTTP(address, payload, "system")
 	if err != nil {
-		log.Printf("ERROR: %v", err.Error())
+		log.L.Infof("ERROR: %v", err.Error())
 		return blanked, err
 	}
 
