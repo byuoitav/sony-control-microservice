@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -12,18 +11,10 @@ import (
 
 	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/status"
-	"github.com/byuoitav/common/v2/auth"
 	"github.com/labstack/echo"
 )
 
 func PowerOn(context echo.Context) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	log.L.Infof("Powering on %s...", context.Param("address"))
 
 	err := helpers.SetPower(context.Param("address"), true)
@@ -33,17 +24,10 @@ func PowerOn(context echo.Context) error {
 	}
 
 	log.L.Debugf("Done.")
-	return context.JSON(http.StatusOK, status.Power{"on"})
+	return context.JSON(http.StatusOK, status.Power{Power: "on"})
 }
 
 func Standby(context echo.Context) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	log.L.Infof("Powering off %s...", context.Param("address"))
 
 	err := helpers.SetPower(context.Param("address"), false)
@@ -53,17 +37,10 @@ func Standby(context echo.Context) error {
 	}
 
 	log.L.Infof("Done.")
-	return context.JSON(http.StatusOK, status.Power{"standby"})
+	return context.JSON(http.StatusOK, status.Power{Power: "standby"})
 }
 
 func GetPower(context echo.Context) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	log.L.Infof("Getting power status of %s...", context.Param("address"))
 
 	response, err := helpers.GetPower(context.Param("address"))
@@ -75,13 +52,6 @@ func GetPower(context echo.Context) error {
 }
 
 func SwitchInput(context echo.Context) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	log.L.Infof("Switching input for %s to %s ...", context.Param("address"), context.Param("port"))
 	address := context.Param("address")
 	port := context.Param("port")
@@ -97,17 +67,10 @@ func SwitchInput(context echo.Context) error {
 	}
 
 	log.L.Debugf("Done.")
-	return context.JSON(http.StatusOK, status.Input{port})
+	return context.JSON(http.StatusOK, status.Input{Input: port})
 }
 
 func SetVolume(context echo.Context) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	address := context.Param("address")
 	value := context.Param("value")
 
@@ -140,17 +103,10 @@ func SetVolume(context echo.Context) error {
 	}
 
 	log.L.Debugf("Done.")
-	return context.JSON(http.StatusOK, status.Volume{volume})
+	return context.JSON(http.StatusOK, status.Volume{Volume: volume})
 }
 
 func VolumeUnmute(context echo.Context) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	address := context.Param("address")
 	log.L.Debugf("Unmuting %s...", address)
 
@@ -161,17 +117,10 @@ func VolumeUnmute(context echo.Context) error {
 	}
 
 	log.L.Debugf("Done.")
-	return context.JSON(http.StatusOK, status.Mute{false})
+	return context.JSON(http.StatusOK, status.Mute{Muted: false})
 }
 
 func setMute(context echo.Context, address string, status bool, retryCount int) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	params := make(map[string]interface{})
 	params["status"] = status
 
@@ -196,17 +145,11 @@ func setMute(context echo.Context, address string, status bool, retryCount int) 
 		//wait for a short time
 		time.Sleep(10 * time.Millisecond)
 	}
-	return errors.New(fmt.Sprintf("Attempted to set mute status %v times, could not", initCount+1))
+
+	return fmt.Errorf("Attempted to set mute status %v times, could not", initCount+1)
 }
 
 func VolumeMute(context echo.Context) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	log.L.Debugf("Muting %s...", context.Param("address"))
 
 	err := setMute(context, context.Param("address"), true, 4)
@@ -216,17 +159,10 @@ func VolumeMute(context echo.Context) error {
 	}
 
 	log.L.Debugf("Done.")
-	return context.JSON(http.StatusOK, status.Mute{true})
+	return context.JSON(http.StatusOK, status.Mute{Muted: true})
 }
 
 func BlankDisplay(context echo.Context) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	params := make(map[string]interface{})
 	params["mode"] = "pictureOff"
 
@@ -235,18 +171,11 @@ func BlankDisplay(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	return context.JSON(http.StatusOK, status.Blanked{true})
+	return context.JSON(http.StatusOK, status.Blanked{Blanked: true})
 
 }
 
 func UnblankDisplay(context echo.Context) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "write-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	params := make(map[string]interface{})
 	params["mode"] = "off"
 
@@ -255,17 +184,10 @@ func UnblankDisplay(context echo.Context) error {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	return context.JSON(http.StatusOK, status.Blanked{false})
+	return context.JSON(http.StatusOK, status.Blanked{Blanked: false})
 }
 
 func GetVolume(context echo.Context) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "read-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	response, err := helpers.GetVolume(context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
@@ -274,14 +196,8 @@ func GetVolume(context echo.Context) error {
 	return context.JSON(http.StatusOK, response)
 }
 
+// GetInput gets the input that is currently being shown on the TV
 func GetInput(context echo.Context) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "read-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	response, err := helpers.GetInput(context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
@@ -291,18 +207,10 @@ func GetInput(context echo.Context) error {
 }
 
 func GetInputList(context echo.Context) error {
-
 	return nil
 }
 
 func GetMute(context echo.Context) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "read-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	response, err := helpers.GetMute(context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
@@ -312,18 +220,29 @@ func GetMute(context echo.Context) error {
 }
 
 func GetBlank(context echo.Context) error {
-	if ok, err := auth.CheckAuthForLocalEndpoints(context, "read-state"); !ok {
-		if err != nil {
-			log.L.Warnf("Problem getting auth: %v", err.Error())
-		}
-		return context.String(http.StatusUnauthorized, "unauthorized")
-	}
-
 	response, err := helpers.GetBlanked(context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	return context.JSON(http.StatusOK, response)
-	return nil
+}
+
+func GetHardwareInfo(context echo.Context) error {
+	response, err := helpers.GetHardwareInfo(context.Param("address"))
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
+}
+
+// GetActiveSignal determines if the current input on the TV is active or no
+func GetActiveSignal(context echo.Context) error {
+	response, err := helpers.GetActiveSignal(context.Param("address"), context.Param("port"))
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, response)
 }
