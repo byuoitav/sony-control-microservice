@@ -2,18 +2,19 @@ package helpers
 
 import (
 	"encoding/json"
-	"log"
+
+	"github.com/byuoitav/common/log"
 
 	"github.com/byuoitav/common/status"
 )
 
 func GetVolume(address string) (status.Volume, error) {
-	log.Printf("Getting volume for %v", address)
+	log.L.Infof("Getting volume for %v", address)
 	parentResponse, err := getAudioInformation(address)
 	if err != nil {
 		return status.Volume{}, err
 	}
-	log.Printf("%v", parentResponse)
+	log.L.Infof("%v", parentResponse)
 
 	var output status.Volume
 	for _, outerResult := range parentResponse.Result {
@@ -26,7 +27,7 @@ func GetVolume(address string) (status.Volume, error) {
 			}
 		}
 	}
-	log.Printf("Done")
+	log.L.Infof("Done")
 
 	return output, nil
 }
@@ -39,13 +40,13 @@ func getAudioInformation(address string) (SonyAudioResponse, error) {
 		ID:      1,
 	}
 
-	log.Printf("%+v", payload)
+	log.L.Infof("%+v", payload)
 
 	resp, err := PostHTTP(address, payload, "audio")
 
 	parentResponse := SonyAudioResponse{}
 
-	log.Printf("%s", resp)
+	log.L.Infof("%s", resp)
 
 	err = json.Unmarshal(resp, &parentResponse)
 	return parentResponse, err
@@ -53,7 +54,7 @@ func getAudioInformation(address string) (SonyAudioResponse, error) {
 }
 
 func GetMute(address string) (status.Mute, error) {
-	log.Printf("Getting mute status for %v", address)
+	log.L.Infof("Getting mute status for %v", address)
 	parentResponse, err := getAudioInformation(address)
 	if err != nil {
 		return status.Mute{}, err
@@ -62,13 +63,13 @@ func GetMute(address string) (status.Mute, error) {
 	for _, outerResult := range parentResponse.Result {
 		for _, result := range outerResult {
 			if result.Target == "speaker" {
-				log.Printf("local mute: %v", result.Mute)
+				log.L.Infof("local mute: %v", result.Mute)
 				output.Muted = result.Mute
 			}
 		}
 	}
 
-	log.Printf("Done")
+	log.L.Infof("Done")
 
 	return output, nil
 }

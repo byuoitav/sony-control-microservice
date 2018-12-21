@@ -6,9 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
+
+	"github.com/byuoitav/common/log"
 )
 
 //SonyAudioResponse is the parent struct returned when we query audio state
@@ -27,14 +28,21 @@ type SonyAudioSettings struct {
 }
 
 type SonyAVContentSettings struct {
-	URI    string `json:"uri"`
-	Source string `json:"source"`
-	Title  string `json:"title"`
+	URI        string `json:"uri"`
+	Source     string `json:"source"`
+	Title      string `json:"title"`
+	Status     string `json:"status"`
+	Connection bool   `json:"connection"`
 }
 
 type SonyAVContentResponse struct {
 	Result []SonyAVContentSettings `json:"result"`
 	ID     int                     `json:"id"`
+}
+
+type SonyMultiAVContentResponse struct {
+	Result [][]SonyAVContentSettings `json:"result"`
+	ID     int                       `json:"id"`
 }
 
 //SonyTVRequest represents the struct we need to send.
@@ -45,6 +53,39 @@ type SonyTVRequest struct {
 	Params  []map[string]interface{} `json:"params"`
 }
 
+type SonyTVSystemResponse struct {
+	ID     int `json:"id"`
+	Result []SonySystemInformation
+}
+
+type SonySystemInformation struct {
+	Product    string `json:"product"`
+	Region     string `json:"region,omitempty"`
+	Language   string `json:"language,omitempty"`
+	Model      string `json:"model"`
+	Serial     string `json:"serial,omitempty"`
+	MAC        string `json:"macAddr,omitempty"`
+	Name       string `json:"name"`
+	Generation string `json:"generation,omitempty"`
+	Area       string `json:"area,omitempty"`
+	CID        string `json:"cid,omitempty"`
+}
+
+type SonyNetworkResponse struct {
+	ID     int `json:"id"`
+	Result [][]SonyTVNetworkInformation
+}
+
+type SonyTVNetworkInformation struct {
+	NetworkInterface string   `json:"netif"`
+	HardwareAddress  string   `json:"hwAddr"`
+	IPv4             string   `json:"ipAddrV4"`
+	IPv6             string   `json:"ipAddrV6"`
+	Netmask          string   `json:"netmask"`
+	Gateway          string   `json:"gateway"`
+	DNS              []string `json:"dns"`
+}
+
 //PostHTTP just sends a request
 func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, error) {
 
@@ -53,7 +94,7 @@ func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, er
 		return []byte{}, err
 	}
 
-	log.Printf("%s", postBody)
+	log.L.Debugf("%s", postBody)
 
 	addr := fmt.Sprintf("http://%s/sony/%s", address, service)
 
@@ -73,7 +114,7 @@ func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, er
 
 	body, err := ioutil.ReadAll(response.Body)
 
-	log.Printf("Body: %s", body)
+	log.L.Debugf("Body: %s", body)
 
 	if err != nil {
 		return []byte{}, err

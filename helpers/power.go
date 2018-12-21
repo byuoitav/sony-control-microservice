@@ -2,9 +2,10 @@ package helpers
 
 import (
 	"errors"
-	"log"
 	"strings"
 	"time"
+
+	"github.com/byuoitav/common/log"
 
 	"github.com/byuoitav/common/status"
 )
@@ -29,7 +30,7 @@ func SetPower(address string, status bool) error {
 		return err
 	}
 
-	log.Printf("%v", postStatus)
+	log.L.Debugf("%v", postStatus)
 
 	if status && postStatus.Power != "on" {
 		// do we want to retry the command
@@ -41,7 +42,7 @@ func SetPower(address string, status bool) error {
 	//we need to wait for a little bit to let the tv finish so it doesn't override
 
 	if preStatus.Power == "standby" && status {
-		log.Printf("Waiting....")
+		log.L.Infof("Waiting....")
 		time.Sleep(1750 * time.Millisecond)
 	}
 
@@ -64,7 +65,7 @@ func GetPower(address string) (status.Power, error) {
 	}
 
 	powerStatus := string(response)
-	log.Printf("Device returned: %s", powerStatus)
+	log.L.Debugf("Device returned: %s", powerStatus)
 	if strings.Contains(powerStatus, "active") {
 		output.Power = "on"
 	} else if strings.Contains(powerStatus, "standby") {
@@ -72,6 +73,8 @@ func GetPower(address string) (status.Power, error) {
 	} else {
 		return status.Power{}, errors.New("Error getting power status")
 	}
+
+	log.L.Infof("Power status of %s: %s", address, output.Power)
 
 	return output, nil
 }
