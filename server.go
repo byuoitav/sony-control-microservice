@@ -3,44 +3,41 @@ package main
 import (
 	"net/http"
 
-	"github.com/byuoitav/authmiddleware"
-	"github.com/byuoitav/hateoas"
+	"github.com/byuoitav/common"
+	"github.com/byuoitav/common/log"
+	"github.com/byuoitav/common/v2/auth"
 	"github.com/byuoitav/sony-control-microservice/handlers"
-	"github.com/jessemillar/health"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
 )
 
 func main() {
 	port := ":8007"
-	router := echo.New()
+	router := common.NewRouter()
 
-	router.Pre(middleware.RemoveTrailingSlash())
-	router.Use(middleware.CORS())
+	// functionality endpoints
+	write := router.Group("", auth.AuthorizeRequest("write-state", "room", auth.LookupResourceFromAddress))
+	write.GET("/:address/power/on", handlers.PowerOn)
+	write.GET("/:address/power/standby", handlers.Standby)
+	write.GET("/:address/input/:port", handlers.SwitchInput)
+	write.GET("/:address/volume/set/:value", handlers.SetVolume)
+	write.GET("/:address/volume/mute", handlers.VolumeMute)
+	write.GET("/:address/volume/unmute", handlers.VolumeUnmute)
+	write.GET("/:address/display/blank", handlers.BlankDisplay)
+	write.GET("/:address/display/unblank", handlers.UnblankDisplay)
 
-	// Use the `secure` routing group to require authentication
-	secure := router.Group("", echo.WrapMiddleware(authmiddleware.Authenticate))
+	// status endpoints
+	read := router.Group("", auth.AuthorizeRequest("read-state", "room", auth.LookupResourceFromAddress))
+	read.GET("/:address/power/status", handlers.GetPower)
+	read.GET("/:address/input/current", handlers.GetInput)
+	read.GET("/:address/input/list", handlers.GetInputList)
+	read.GET("/:address/active/:port", handlers.GetActiveSignal)
+	read.GET("/:address/volume/level", handlers.GetVolume)
+	read.GET("/:address/volume/mute/status", handlers.GetMute)
+	read.GET("/:address/display/status", handlers.GetBlank)
+	read.GET("/:address/hardware", handlers.GetHardwareInfo)
 
-	router.GET("/", echo.WrapHandler(http.HandlerFunc(hateoas.RootResponse)))
-	router.GET("/health", echo.WrapHandler(http.HandlerFunc(health.Check)))
-
-	//functionality endpoints
-	secure.GET("/:address/power/on", handlers.PowerOn)
-	secure.GET("/:address/power/standby", handlers.Standby)
-	secure.GET("/:address/input/:port", handlers.SwitchInput)
-	secure.GET("/:address/volume/set/:value", handlers.SetVolume)
-	secure.GET("/:address/volume/mute", handlers.VolumeMute)
-	secure.GET("/:address/volume/unmute", handlers.VolumeUnmute)
-	secure.GET("/:address/display/blank", handlers.BlankDisplay)
-	secure.GET("/:address/display/unblank", handlers.UnblankDisplay)
-
-	//status endpoints
-	secure.GET("/:address/power/status", handlers.GetPower)
-	secure.GET("/:address/input/current", handlers.GetInput)
-	secure.GET("/:address/input/list", handlers.GetInputList)
-	secure.GET("/:address/volume/level", handlers.GetVolume)
-	secure.GET("/:address/volume/mute/status", handlers.GetMute)
-	secure.GET("/:address/display/status", handlers.GetBlank)
+	// log level endpoints
+	router.PUT("/log-level/:level", log.SetLogLevel)
+	router.GET("/log-level", log.GetLogLevel)
 
 	server := http.Server{
 		Addr:           port,

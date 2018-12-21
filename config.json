@@ -1,0 +1,9 @@
+{
+    "name": "sony-control-microservice",
+    "port": ":8007",
+    "env-vars": [
+        "BYPASS_AUTH",
+        "ROOM_SYSTEM",
+        "SONY_TV_PSK"
+    ]
+}
