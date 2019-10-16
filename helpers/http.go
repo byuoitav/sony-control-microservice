@@ -2,14 +2,13 @@ package helpers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
-
-	"github.com/byuoitav/common/log"
 )
 
 //SonyAudioResponse is the parent struct returned when we query audio state
@@ -86,46 +85,44 @@ type SonyTVNetworkInformation struct {
 	DNS              []string `json:"dns"`
 }
 
-//PostHTTP just sends a request
-func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, error) {
-
-	postBody, err := json.Marshal(payload)
+func PostHTTPWithContext(ctx context.Context, address, service string, payload SonyTVRequest) ([]byte, error) {
+	reqBody, err := json.Marshal(payload)
 	if err != nil {
 		return []byte{}, err
 	}
-
-	log.L.Debugf("%s", postBody)
 
 	addr := fmt.Sprintf("http://%s/sony/%s", address, service)
 
-	request, err := http.NewRequest("POST", addr, bytes.NewBuffer(postBody))
+	req, err := http.NewRequestWithContext(ctx, "POST", addr, bytes.NewBuffer(reqBody))
 	if err != nil {
 		return []byte{}, err
 	}
 
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("X-Auth-PSK", os.Getenv("SONY_TV_PSK"))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Auth-PSK", os.Getenv("SONY_TV_PSK"))
 
-	client := &http.Client{}
-	response, err := client.Do(request)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return []byte{}, err
 	}
+	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(response.Body)
-
-	log.L.Debugf("Body: %s", body)
-
-	if err != nil {
+	body, err := ioutil.ReadAll(resp.Body)
+	switch {
+	case err != nil:
 		return []byte{}, err
-	} else if response.StatusCode != http.StatusOK {
+	case resp.StatusCode != http.StatusOK:
 		return []byte{}, errors.New(string(body))
-	} else if body == nil {
+	case body == nil:
 		return []byte{}, errors.New("Response from device was blank")
 	}
 
-	defer response.Body.Close()
 	return body, nil
+}
+
+//PostHTTP just sends a request
+func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, error) {
+	return PostHTTPWithContext(context.TODO(), address, service, payload)
 }
 
 func BuildAndSendPayload(address string, service string, method string, params map[string]interface{}) error {

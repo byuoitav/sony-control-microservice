@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"context"
 	"encoding/json"
 	"net"
 	"strings"
@@ -50,7 +51,7 @@ func GetHardwareInfo(address string) (structs.HardwareInfo, *nerr.E) {
 	log.L.Info(toReturn)
 
 	// get power status
-	powerStatus, e := GetPower(address)
+	powerStatus, e := GetPower(context.TODO(), address)
 	if e != nil {
 		err = nerr.Translate(e).Addf("Could not get power status from %s", address)
 		return toReturn, err

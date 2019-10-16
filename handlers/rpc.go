@@ -17,7 +17,7 @@ import (
 func PowerOn(context echo.Context) error {
 	log.L.Infof("Powering on %s...", context.Param("address"))
 
-	err := helpers.SetPower(context.Param("address"), true)
+	err := helpers.SetPower(context.Request().Context(), context.Param("address"), true)
 	if err != nil {
 		log.L.Debugf("Error: %v", err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
@@ -30,7 +30,7 @@ func PowerOn(context echo.Context) error {
 func Standby(context echo.Context) error {
 	log.L.Infof("Powering off %s...", context.Param("address"))
 
-	err := helpers.SetPower(context.Param("address"), false)
+	err := helpers.SetPower(context.Request().Context(), context.Param("address"), false)
 	if err != nil {
 		log.L.Debugf("Error: %v", err.Error())
 		return context.JSON(http.StatusInternalServerError, err.Error())
@@ -43,7 +43,7 @@ func Standby(context echo.Context) error {
 func GetPower(context echo.Context) error {
 	log.L.Infof("Getting power status of %s...", context.Param("address"))
 
-	response, err := helpers.GetPower(context.Param("address"))
+	response, err := helpers.GetPower(context.Request().Context(), context.Param("address"))
 	if err != nil {
 		return context.JSONBlob(http.StatusInternalServerError, []byte(err.Error()))
 	}

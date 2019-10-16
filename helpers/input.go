@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"regexp"
@@ -16,7 +17,7 @@ import (
 func GetInput(address string) (status.Input, error) {
 	var output status.Input
 
-	pwrState, err := GetPower(address)
+	pwrState, err := GetPower(context.TODO(), address)
 	if err != nil {
 		return output, err
 	}
