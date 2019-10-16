@@ -3,6 +3,8 @@ package helpers
 import (
 	"context"
 	"errors"
+	"fmt"
+	"math/rand"
 	"strings"
 	"time"
 
@@ -30,7 +32,7 @@ func SetPower(ctx context.Context, address string, status bool) error {
 	}
 
 	// wait for the display to turn on
-	ticker := time.NewTicker(500 * time.Millisecond)
+	ticker := time.NewTicker(2000 * time.Millisecond)
 	defer ticker.Stop()
 
 	for {
@@ -44,6 +46,32 @@ func SetPower(ctx context.Context, address string, status bool) error {
 			}
 
 			log.L.Infof("Waiting for display power to change to %v, current status %s", status, power.Power)
+
+			// try to set the input
+			log.L.Infof("Trying to set the input")
+			newparams := make(map[string]interface{})
+			if rand.Int()%2 == 0 {
+				newparams["uri"] = fmt.Sprintf("extInput:hdbt?port=1")
+				log.L.Infof("hdBT")
+			} else {
+				newparams["uri"] = fmt.Sprintf("extInput:hdmi?port=1")
+				log.L.Infof("hdMI")
+			}
+
+			newpayload := SonyTVRequest{
+				Params:  []map[string]interface{}{newparams},
+				Method:  "setPlayContent",
+				Version: "1.0",
+				ID:      1,
+			}
+
+			newresp, err := PostHTTPWithContext(ctx, address, "avContent", newpayload)
+			switch {
+			case err != nil:
+				log.L.Warnf("failed to set input: %s", err)
+			default:
+				log.L.Infof("set input response: %s", newresp)
+			}
 
 			switch {
 			case status && power.Power == "on":
