@@ -59,6 +59,9 @@ func SwitchInput(context echo.Context) error {
 	splitPort := strings.Split(port, "!")
 
 	params := make(map[string]interface{})
+	if len(splitPort) < 2 {
+		return context.JSON(http.StatusBadRequest, fmt.Sprintf("ports configured incorrectly (should follow format \"hdmi!2\"): %s", port))
+	}
 	params["uri"] = fmt.Sprintf("extInput:%s?port=%s", splitPort[0], splitPort[1])
 
 	err := helpers.BuildAndSendPayload(address, "avContent", "setPlayContent", params)
