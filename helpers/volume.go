@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/byuoitav/common/log"
@@ -9,8 +10,15 @@ import (
 )
 
 func GetVolume(address string) (status.Volume, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultSonyTimeout)
+	defer cancel()
+
+	return GetVolumeWithContext(ctx, address)
+}
+
+func GetVolumeWithContext(ctx context.Context, address string) (status.Volume, error) {
 	log.L.Infof("Getting volume for %v", address)
-	parentResponse, err := getAudioInformation(address)
+	parentResponse, err := getAudioInformation(ctx, address)
 	if err != nil {
 		return status.Volume{}, err
 	}
@@ -32,7 +40,7 @@ func GetVolume(address string) (status.Volume, error) {
 	return output, nil
 }
 
-func getAudioInformation(address string) (SonyAudioResponse, error) {
+func getAudioInformation(ctx context.Context, address string) (SonyAudioResponse, error) {
 	payload := SonyTVRequest{
 		Params:  []map[string]interface{}{},
 		Method:  "getVolumeInformation",
@@ -42,7 +50,7 @@ func getAudioInformation(address string) (SonyAudioResponse, error) {
 
 	log.L.Infof("%+v", payload)
 
-	resp, err := PostHTTP(address, payload, "audio")
+	resp, err := PostHTTPWithContext(ctx, address, "audio", payload)
 
 	parentResponse := SonyAudioResponse{}
 
@@ -54,8 +62,15 @@ func getAudioInformation(address string) (SonyAudioResponse, error) {
 }
 
 func GetMute(address string) (status.Mute, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultSonyTimeout)
+	defer cancel()
+
+	return GetMuteWithContext(ctx, address)
+}
+
+func GetMuteWithContext(ctx context.Context, address string) (status.Mute, error) {
 	log.L.Infof("Getting mute status for %v", address)
-	parentResponse, err := getAudioInformation(address)
+	parentResponse, err := getAudioInformation(ctx, address)
 	if err != nil {
 		return status.Mute{}, err
 	}

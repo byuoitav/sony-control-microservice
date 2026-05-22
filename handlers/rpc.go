@@ -64,7 +64,7 @@ func SwitchInput(context echo.Context) error {
 	}
 	params["uri"] = fmt.Sprintf("extInput:%s?port=%s", splitPort[0], splitPort[1])
 
-	err := helpers.BuildAndSendPayload(address, "avContent", "setPlayContent", params)
+	err := helpers.BuildAndSendPayloadWithContext(context.Request().Context(), address, "avContent", "setPlayContent", params)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -90,7 +90,7 @@ func SetVolume(context echo.Context) error {
 	params["target"] = "speaker"
 	params["volume"] = value
 
-	err = helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
+	err = helpers.BuildAndSendPayloadWithContext(context.Request().Context(), address, "audio", "setAudioVolume", params)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -100,7 +100,7 @@ func SetVolume(context echo.Context) error {
 	params["target"] = "headphone"
 	params["volume"] = value
 
-	err = helpers.BuildAndSendPayload(address, "audio", "setAudioVolume", params)
+	err = helpers.BuildAndSendPayloadWithContext(context.Request().Context(), address, "audio", "setAudioVolume", params)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -130,12 +130,12 @@ func setMute(context echo.Context, address string, status bool, retryCount int) 
 	initCount := retryCount
 
 	for retryCount >= 0 {
-		err := helpers.BuildAndSendPayload(address, "audio", "setAudioMute", params)
+		err := helpers.BuildAndSendPayloadWithContext(context.Request().Context(), address, "audio", "setAudioMute", params)
 		if err != nil {
 			return err
 		}
 		//we need to validate that it was actually muted
-		postStatus, err := helpers.GetMute(address)
+		postStatus, err := helpers.GetMuteWithContext(context.Request().Context(), address)
 		if err != nil {
 			return err
 		}
@@ -169,7 +169,7 @@ func BlankDisplay(context echo.Context) error {
 	params := make(map[string]interface{})
 	params["mode"] = "pictureOff"
 
-	err := helpers.BuildAndSendPayload(context.Param("address"), "system", "setPowerSavingMode", params)
+	err := helpers.BuildAndSendPayloadWithContext(context.Request().Context(), context.Param("address"), "system", "setPowerSavingMode", params)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -182,7 +182,7 @@ func UnblankDisplay(context echo.Context) error {
 	params := make(map[string]interface{})
 	params["mode"] = "off"
 
-	err := helpers.BuildAndSendPayload(context.Param("address"), "system", "setPowerSavingMode", params)
+	err := helpers.BuildAndSendPayloadWithContext(context.Request().Context(), context.Param("address"), "system", "setPowerSavingMode", params)
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -191,7 +191,7 @@ func UnblankDisplay(context echo.Context) error {
 }
 
 func GetVolume(context echo.Context) error {
-	response, err := helpers.GetVolume(context.Param("address"))
+	response, err := helpers.GetVolumeWithContext(context.Request().Context(), context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -201,7 +201,7 @@ func GetVolume(context echo.Context) error {
 
 // GetInput gets the input that is currently being shown on the TV
 func GetInput(context echo.Context) error {
-	response, err := helpers.GetInput(context.Param("address"))
+	response, err := helpers.GetInputWithContext(context.Request().Context(), context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -214,7 +214,7 @@ func GetInputList(context echo.Context) error {
 }
 
 func GetMute(context echo.Context) error {
-	response, err := helpers.GetMute(context.Param("address"))
+	response, err := helpers.GetMuteWithContext(context.Request().Context(), context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -223,7 +223,7 @@ func GetMute(context echo.Context) error {
 }
 
 func GetBlank(context echo.Context) error {
-	response, err := helpers.GetBlanked(context.Param("address"))
+	response, err := helpers.GetBlankedWithContext(context.Request().Context(), context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -232,7 +232,7 @@ func GetBlank(context echo.Context) error {
 }
 
 func GetHardwareInfo(context echo.Context) error {
-	response, err := helpers.GetHardwareInfo(context.Param("address"))
+	response, err := helpers.GetHardwareInfoWithContext(context.Request().Context(), context.Param("address"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -242,7 +242,7 @@ func GetHardwareInfo(context echo.Context) error {
 
 // GetActiveSignal determines if the current input on the TV is active or no
 func GetActiveSignal(context echo.Context) error {
-	response, err := helpers.GetActiveSignal(context.Param("address"), context.Param("port"))
+	response, err := helpers.GetActiveSignalWithContext(context.Request().Context(), context.Param("address"), context.Param("port"))
 	if err != nil {
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}

@@ -13,6 +13,13 @@ import (
 
 // GetHardwareInfo returns the hardware information for the device
 func GetHardwareInfo(address string) (structs.HardwareInfo, *nerr.E) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultSonyTimeout)
+	defer cancel()
+
+	return GetHardwareInfoWithContext(ctx, address)
+}
+
+func GetHardwareInfoWithContext(ctx context.Context, address string) (structs.HardwareInfo, *nerr.E) {
 	var toReturn structs.HardwareInfo
 
 	// get the hostname
@@ -24,7 +31,7 @@ func GetHardwareInfo(address string) (structs.HardwareInfo, *nerr.E) {
 	}
 
 	// get Sony TV system information
-	systemInfo, err := getSystemInfo(address)
+	systemInfo, err := getSystemInfo(ctx, address)
 	if err != nil {
 		err.Addf("Could not get system info from %s", address)
 		return toReturn, err
@@ -35,7 +42,7 @@ func GetHardwareInfo(address string) (structs.HardwareInfo, *nerr.E) {
 	toReturn.FirmwareVersion = systemInfo.Generation
 
 	// get Sony TV network settings
-	networkInfo, err := getNetworkInfo(address)
+	networkInfo, err := getNetworkInfo(ctx, address)
 	if err != nil {
 		err.Addf("Could not get network info from %s", address)
 		return toReturn, err
@@ -51,7 +58,7 @@ func GetHardwareInfo(address string) (structs.HardwareInfo, *nerr.E) {
 	log.L.Info(toReturn)
 
 	// get power status
-	powerStatus, e := GetPower(context.TODO(), address)
+	powerStatus, e := GetPower(ctx, address)
 	if e != nil {
 		err = nerr.Translate(e).Addf("Could not get power status from %s", address)
 		return toReturn, err
@@ -62,7 +69,7 @@ func GetHardwareInfo(address string) (structs.HardwareInfo, *nerr.E) {
 	return toReturn, nil
 }
 
-func getSystemInfo(address string) (SonySystemInformation, *nerr.E) {
+func getSystemInfo(ctx context.Context, address string) (SonySystemInformation, *nerr.E) {
 	var system SonyTVSystemResponse
 
 	payload := SonyTVRequest{
@@ -71,7 +78,7 @@ func getSystemInfo(address string) (SonySystemInformation, *nerr.E) {
 		ID: 1,
 	}
 
-	response, err := PostHTTP(address, payload, "system")
+	response, err := PostHTTPWithContext(ctx, address, "system", payload)
 	if err != nil {
 		return SonySystemInformation{}, nerr.Translate(err)
 	}
@@ -84,7 +91,7 @@ func getSystemInfo(address string) (SonySystemInformation, *nerr.E) {
 	return system.Result[0], nil
 }
 
-func getNetworkInfo(address string) (SonyTVNetworkInformation, *nerr.E) {
+func getNetworkInfo(ctx context.Context, address string) (SonyTVNetworkInformation, *nerr.E) {
 	var network SonyNetworkResponse
 
 	payload := SonyTVRequest{
@@ -98,7 +105,7 @@ func getNetworkInfo(address string) (SonyTVNetworkInformation, *nerr.E) {
 		},
 	}
 
-	response, err := PostHTTP(address, payload, "system")
+	response, err := PostHTTPWithContext(ctx, address, "system", payload)
 	if err != nil {
 		return SonyTVNetworkInformation{}, nerr.Translate(err)
 	}

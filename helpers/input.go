@@ -15,9 +15,16 @@ import (
 
 // GetInput gets the input that is currently being shown on the TV
 func GetInput(address string) (status.Input, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultSonyTimeout)
+	defer cancel()
+
+	return GetInputWithContext(ctx, address)
+}
+
+func GetInputWithContext(ctx context.Context, address string) (status.Input, error) {
 	var output status.Input
 
-	pwrState, err := GetPower(context.TODO(), address)
+	pwrState, err := GetPower(ctx, address)
 	if err != nil {
 		return output, err
 	}
@@ -32,7 +39,7 @@ func GetInput(address string) (status.Input, error) {
 		Version: "1.0",
 	}
 
-	response, err := PostHTTP(address, payload, "avContent")
+	response, err := PostHTTPWithContext(ctx, address, "avContent", payload)
 	if err != nil {
 		return output, err
 	}
@@ -59,6 +66,13 @@ func GetInput(address string) (status.Input, error) {
 
 // GetActiveSignal determines if the current input on the TV is active or not
 func GetActiveSignal(address, port string) (structs.ActiveSignal, *nerr.E) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultSonyTimeout)
+	defer cancel()
+
+	return GetActiveSignalWithContext(ctx, address, port)
+}
+
+func GetActiveSignalWithContext(ctx context.Context, address, port string) (structs.ActiveSignal, *nerr.E) {
 	var output structs.ActiveSignal
 
 	payload := SonyTVRequest{
@@ -68,7 +82,7 @@ func GetActiveSignal(address, port string) (structs.ActiveSignal, *nerr.E) {
 		Version: "1.1",
 	}
 
-	response, err := PostHTTP(address, payload, "avContent")
+	response, err := PostHTTPWithContext(ctx, address, "avContent", payload)
 	if err != nil {
 		return output, nerr.Translate(err)
 	}

@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,6 +18,13 @@ type SonyBaseResult struct {
 }
 
 func GetBlanked(address string) (status.Blanked, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultSonyTimeout)
+	defer cancel()
+
+	return GetBlankedWithContext(ctx, address)
+}
+
+func GetBlankedWithContext(ctx context.Context, address string) (status.Blanked, error) {
 
 	var blanked status.Blanked
 
@@ -29,7 +37,7 @@ func GetBlanked(address string) (status.Blanked, error) {
 
 	log.L.Infof("%+v", payload)
 
-	resp, err := PostHTTP(address, payload, "system")
+	resp, err := PostHTTPWithContext(ctx, address, "system", payload)
 	if err != nil {
 		log.L.Infof("ERROR: %v", err.Error())
 		return blanked, err

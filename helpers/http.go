@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 )
 
 //SonyAudioResponse is the parent struct returned when we query audio state
@@ -51,6 +53,10 @@ type SonyTVRequest struct {
 	ID      int                      `json:"id"`
 	Params  []map[string]interface{} `json:"params"`
 }
+
+const defaultSonyTimeout = 5 * time.Second
+
+var sonyHTTPClient = &http.Client{Timeout: defaultSonyTimeout}
 
 type SonyTVSystemResponse struct {
 	ID     int `json:"id"`
@@ -101,13 +107,13 @@ func PostHTTPWithContext(ctx context.Context, address, service string, payload S
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Auth-PSK", os.Getenv("SONY_TV_PSK"))
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := sonyHTTPClient.Do(req)
 	if err != nil {
 		return []byte{}, err
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	switch {
 	case err != nil:
 		return []byte{}, err
@@ -122,10 +128,20 @@ func PostHTTPWithContext(ctx context.Context, address, service string, payload S
 
 //PostHTTP just sends a request
 func PostHTTP(address string, payload SonyTVRequest, service string) ([]byte, error) {
-	return PostHTTPWithContext(context.TODO(), address, service, payload)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultSonyTimeout)
+	defer cancel()
+
+	return PostHTTPWithContext(ctx, address, service, payload)
 }
 
 func BuildAndSendPayload(address string, service string, method string, params map[string]interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultSonyTimeout)
+	defer cancel()
+
+	return BuildAndSendPayloadWithContext(ctx, address, service, method, params)
+}
+
+func BuildAndSendPayloadWithContext(ctx context.Context, address string, service string, method string, params map[string]interface{}) error {
 	payload := SonyTVRequest{
 		Params:  []map[string]interface{}{params},
 		Method:  method,
@@ -133,7 +149,7 @@ func BuildAndSendPayload(address string, service string, method string, params m
 		ID:      1,
 	}
 
-	_, err := PostHTTP(address, payload, service)
+	_, err := PostHTTPWithContext(ctx, address, service, payload)
 
 	return err
 
